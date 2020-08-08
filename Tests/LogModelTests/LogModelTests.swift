@@ -1,15 +1,54 @@
 import XCTest
+import Files
 @testable import LogModel
 
 final class LogModelTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(LogModel().text, "Hello, World!")
+	
+	var db: Database!
+	let dir = Directory.appSupport.testing.LogModelTests
+	
+	override func setUp() {
+		print(dir.url)
+		db = Database(dir: dir.url, name: "Data")
+	}
+	
+	override func tearDown() {
+		db?.disconnect()
+		do {
+			try FileManager.default.removeItem(at: dir.url.appendingPathComponent("Data").appendingPathExtension("sqlite"))
+		} catch {
+			print(String(describing: error))
+		}
+	}
+	
+    func test_writeReadData_inLocalStorage() {
+		
+		let entry = Entry(id: nil,
+						  bundleID: "com.duct-ape-productions.LogModel",
+						  userID: nil,
+						  deviceID: UUID(),
+						  date: Date(),
+						  severity: .verbose,
+						  message: "tapped Login button",
+						  customData: "")
+		
+		db.record(entry)
+		
+		guard let result = db.get().first else {
+			XCTFail("found no results from the database")
+			return
+		}
+		
+		XCTAssertEqual(result.id, 1)
+		XCTAssertEqual(result.bundleID, entry.bundleID)
+		XCTAssertEqual(result.userID, entry.userID)
+		XCTAssertEqual(result.deviceID, entry.deviceID)
+		XCTAssertEqual(result.severity, entry.severity)
+		XCTAssertEqual(result.message, entry.message)
+		XCTAssertEqual(result.customData, entry.customData)
+		
+		let diff = result.date.distance(to: entry.date)
+		
+		XCTAssertLessThan(diff, 0.002)
     }
-
-    static var allTests = [
-        ("testExample", testExample),
-    ]
 }
