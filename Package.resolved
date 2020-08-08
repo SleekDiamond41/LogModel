@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Files",
+        "repositoryURL": "https://github.com/SleekDiamond41/Files",
+        "state": {
+          "branch": null,
+          "revision": "afd905165056d7b14516642cbf16b9fe1f178dcf",
+          "version": "1.2.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
