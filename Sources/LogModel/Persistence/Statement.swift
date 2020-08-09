@@ -103,9 +103,9 @@ struct Statement {
 	init(in db: OpaquePointer, query: String) {
 		var p: OpaquePointer!
 		
-		let status = sqlite3_prepare_v2(db, query, -1, &p, nil)
+		let status = Status(sqlite3_prepare_v2(db, query, -1, &p, nil))
 		
-		assert(status == SQLITE_OK)
+		assert(status == .ok)
 		
 		self.pointer = p
 		self.query = query
@@ -120,8 +120,8 @@ struct Statement {
 		sqlite3_finalize(pointer)
 	}
 	
-	func step() -> Int32 {
-		return sqlite3_step(pointer)
+	func step() -> Status {
+		return Status(sqlite3_step(pointer))
 	}
 	
 	

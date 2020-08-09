@@ -29,9 +29,9 @@ final class LogModelTests: XCTestCase {
 						  userID: nil,
 						  deviceID: UUID())
 		
-		db.record(entry)
+		db.log(entry)
 		
-		guard let result = db.get().first else {
+		guard let result = db.getSyncBatch(max: 1).first else {
 			XCTFail("found no results from the database")
 			return
 		}

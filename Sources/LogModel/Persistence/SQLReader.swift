@@ -5,15 +5,12 @@
 //  Created by Michael Arrington on 8/8/20.
 //
 
-import struct Foundation.URL
-import SQLite3
 
-
-final class SQLReader: SQLConnection, Reader {
+final class SQLReader: SQLConnection {
 	
 }
 
-// MARK: - Reader Conformance
+
 extension SQLReader {
 	
 	func get(firstID: Int64, max: UInt32) -> [Entry] {
@@ -38,7 +35,7 @@ extension SQLReader {
 		
 		var status = statement.step()
 		
-		while status == SQLITE_ROW {
+		while status == .row {
 			results.append(.init(statement))
 			
 			status = statement.step()

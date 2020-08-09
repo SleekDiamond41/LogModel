@@ -5,23 +5,15 @@
 //  Created by Michael Arrington on 8/8/20.
 //
 
-import Foundation
-import SQLite3
 
-
-final class SQLWriter: SQLConnection, Writer {
+final class SQLWriter: SQLConnection {
 	private var statement: Statement!
-	
-	override init(dir: URL, name: String) {
-		super.init(dir: dir, name: name)
-	}
 	
 	override func connect() {
 		super.connect()
 		
-		assert(statement == nil)
-		
 		Entry.createTable(in: connection)
+		SyncData.createTable(in: connection)
 		
 		let query = """
 		INSERT INTO entries (date, severity, message, bundle_id, user_id, device_id, custom_data)
@@ -32,13 +24,15 @@ final class SQLWriter: SQLConnection, Writer {
 	}
 	
 	override func disconnect() {
-		statement.finalize()
+		
+		statement?.finalize()
 		statement = nil
+		
 		super.disconnect()
 	}
 }
 
-// MARK: - Writer Conformance
+
 extension SQLWriter {
 	
 	func write(_ entry: Entry) {
@@ -51,7 +45,7 @@ extension SQLWriter {
 		
 		let status = statement.step()
 		
-		guard status == SQLITE_DONE else {
+		guard status == .done else {
 			preconditionFailure()
 		}
 	}
@@ -59,7 +53,6 @@ extension SQLWriter {
 	
 	func setMostRecentlySyncedID(_ data: SyncData) {
 		
-		// set the value
 		let query = """
 		INSERT INTO synced_data (id, date)
 		VALUES (?, ?);
@@ -73,7 +66,7 @@ extension SQLWriter {
 		
 		let status = statement.step()
 		
-		guard status == SQLITE_OK else {
+		guard status == .ok else {
 			preconditionFailure()
 		}
 	}
@@ -81,7 +74,7 @@ extension SQLWriter {
 	func getMostRecentlySync() -> SyncData? {
 		
 		let query = """
-		SELECT (MAX(id), date)
+		SELECT *
 		FROM synced_data;
 		"""
 		
@@ -91,8 +84,8 @@ extension SQLWriter {
 		
 		let status = statement.step()
 		
-		guard status == SQLITE_OK else {
-			preconditionFailure()
+		guard status == .row else {
+			return nil
 		}
 		
 		return .init(from: statement)

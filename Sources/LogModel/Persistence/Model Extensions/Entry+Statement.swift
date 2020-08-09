@@ -5,8 +5,7 @@
 //  Created by Michael Arrington on 8/8/20.
 //
 
-import Foundation
-import SQLite3
+import struct Foundation.UUID
 
 
 extension Entry {
@@ -54,7 +53,7 @@ extension Entry {
 		
 		let status = statement.step()
 		
-		guard status == SQLITE_DONE else {
+		guard status == .done else {
 			return
 		}
 	}
@@ -72,7 +71,7 @@ extension Entry {
 		
 		let status = statement.step()
 		
-		guard status == SQLITE_DONE else {
+		guard status == .done else {
 			return
 		}
 	}

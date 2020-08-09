@@ -15,8 +15,12 @@ class SQLConnection {
 	
 	private(set) var connection: OpaquePointer!
 	
+	var isConnected: Bool {
+		return connection != nil
+	}
+	
 	deinit {
-		guard connection != nil else {
+		guard isConnected else {
 			return
 		}
 
@@ -44,30 +48,26 @@ class SQLConnection {
 		try! manager.createDirectory(at: dir, withIntermediateDirectories: true)
 	}
 	
-	private func prepareConnection() {
-		assert(self.connection == nil)
+	func connect() {
+		assert(!isConnected)
 		
 		let fileURL = dir.appendingPathComponent(name)
+		let status = Status(sqlite3_open(fileURL.path, &connection))
 		
-		guard sqlite3_open(fileURL.path, &connection) == SQLITE_OK else {
+		guard status == .ok else {
 			preconditionFailure()
 		}
-		
-		guard connection != nil else {
+		guard isConnected else {
 			preconditionFailure()
 		}
-	}
-	
-	func connect() {
-		assert(connection == nil)
-		
-		prepareConnection()
 	}
 	
 	func disconnect() {
-		assert(connection != nil)
+		assert(isConnected)
 		
-		guard sqlite3_close(connection) == SQLITE_OK else {
+		let status = Status(sqlite3_close(connection))
+		
+		guard status == .ok else {
 			preconditionFailure()
 		}
 	}

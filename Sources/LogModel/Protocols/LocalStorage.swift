@@ -6,5 +6,7 @@
 //
 
 protocol LocalStorage {
-	func record(_ : Entry)
+	func log(_ : Entry)
+	func getSyncBatch(max: UInt32) -> [Entry]
+	func setLastSyncedID(_ id: Int64)
 }
