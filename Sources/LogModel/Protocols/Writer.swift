@@ -7,4 +7,6 @@
 
 protocol Writer {
 	func write(_ entry: Entry)
+	func setMostRecentlySyncedID(_ data: SyncData)
+	func getMostRecentlySync() -> SyncData?
 }

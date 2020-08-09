@@ -8,132 +8,165 @@
 import Foundation
 import SQLite3
 
+fileprivate protocol Bindable {
+	init(_ : OpaquePointer, at: Int32)
+	
+	func bind(to s: OpaquePointer, at: Int32)
+}
 
-struct Statement {
-	
-	private let pointer: OpaquePointer
-	let string: String
-	
-	
-	// MARK: - Binding
-	
-	static func bind(_ value: Int64, to s: OpaquePointer, at index: Int32) {
-		let status = sqlite3_bind_int64(s, index, value)
-		
-		guard status == SQLITE_OK else {
-			fatalError(String(reflecting: status))
-		}
-	}
-	
-	private static func bind(_ text: String, to s: OpaquePointer, at index: Int32) {
-		
-		let status = sqlite3_bind_text(s, index, NSString(string: text).utf8String, -1, nil)
+extension String: Bindable {
+	func bind(to s: OpaquePointer, at index: Int32) {
+		let status = sqlite3_bind_text(s, index, NSString(string: self).utf8String, -1, nil)
 		
 		guard status == SQLITE_OK else {
 			preconditionFailure(String(reflecting: status))
 		}
 	}
 	
-	private static func bind(_ value: Date, to s: OpaquePointer, at index: Int32) {
-		let str = dateFormatter.string(from: value)
+	init(_ s: OpaquePointer, at index: Int32) {
+		guard let p = sqlite3_column_text(s, index) else {
+			assertionFailure()
+			self = ""
+			return
+		}
 		
-		bind(str, to: s, at: index)
+		self.init(cString: p)
 	}
-	
-	private static func bind(_ value: Severity, to s: OpaquePointer, at index: Int32) {
-		let status = sqlite3_bind_int(s, index, Int32(value.rawValue))
+}
+
+extension Severity: Bindable {
+	func bind(to s: OpaquePointer, at index: Int32) {
+		let status = sqlite3_bind_int(s, index, Int32(rawValue))
 		
 		guard status == SQLITE_OK else {
 			fatalError(String(reflecting: status))
 		}
 	}
 	
-	static func bind(_ entry: Entry, into s: OpaquePointer) {
+	init(_ s: OpaquePointer, at index: Int32) {
+		let value = UInt8(sqlite3_column_int(s, index))
+		self = Severity(rawValue: value)!
+	}
+}
+
+extension Int64: Bindable {
+	func bind(to s: OpaquePointer, at index: Int32) {
+		let status = sqlite3_bind_int64(s, index, self)
 		
-		bind(entry.date, to: s, at: 1)
-		bind(entry.severity, to: s, at: 2)
-		bind(entry.message, to: s, at: 3)
-		bind(entry.bundleID, to: s, at: 4)
-		bind(entry.userID?.uuidString ?? "", to: s, at: 5)
-		bind(entry.deviceID?.uuidString ?? "", to: s, at: 6)
-		bind(entry.customData ?? "", to: s, at: 7)
+		guard status == SQLITE_OK else {
+			fatalError(String(reflecting: status))
+		}
+	}
+	
+	init(_ s: OpaquePointer, at index: Int32) {
+		self = sqlite3_column_int64(s, index)
+	}
+}
+
+extension UInt32: Bindable {
+	func bind(to s: OpaquePointer, at index: Int32) {
+		Int64(self).bind(to: s, at: index)
+	}
+	
+	init(_ s: OpaquePointer, at index: Int32) {
+		self.init(Int64(s, at: index))
+	}
+}
+
+extension Date: Bindable {
+	
+	private static let dateFormatter: DateFormatter = {
+		let formatter = DateFormatter()
+		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS Z"
+		formatter.timeZone = TimeZone(abbreviation: "UTC")
+		return formatter
+	}()
+
+	
+	func bind(to s: OpaquePointer, at index: Int32) {
+		let str = Date.dateFormatter.string(from: self)
+		str.bind(to: s, at: index)
+	}
+	
+	init(_ s: OpaquePointer, at index: Int32) {
+		let str = String(s, at: index)
+		self = Date.dateFormatter.date(from: str)!
+	}
+}
+
+
+struct Statement {
+	
+	let pointer: OpaquePointer
+	let query: String
+	
+	init(in db: OpaquePointer, query: String) {
+		var p: OpaquePointer!
+		
+		let status = sqlite3_prepare_v2(db, query, -1, &p, nil)
+		
+		assert(status == SQLITE_OK)
+		
+		self.pointer = p
+		self.query = query
+	}
+	
+	func reset() {
+		sqlite3_reset(pointer)
+		sqlite3_clear_bindings(pointer)
+	}
+	
+	func finalize() {
+		sqlite3_finalize(pointer)
+	}
+	
+	func step() -> Int32 {
+		return sqlite3_step(pointer)
+	}
+	
+	
+	// MARK: - Binding
+	
+	func bind(_ value: String, at index: Int32) {
+		value.bind(to: pointer, at: index)
+	}
+	
+	func bind(_ value: Severity, at index: Int32) {
+		value.bind(to: pointer, at: index)
+	}
+	
+	func bind(_ value: Int64, at index: Int32) {
+		value.bind(to: pointer, at: index)
+	}
+	
+	func bind(_ value: Date, at index: Int32) {
+		value.bind(to: pointer, at: index)
+	}
+	
+	func bind(_ value: UInt32, at index: Int32) {
+		value.bind(to: pointer, at: index)
 	}
 	
 	
 	// MARK: - Unbinding
 	
-	private static func unbind(from s: OpaquePointer, at index: Int32) -> String {
-		
-		guard let p = sqlite3_column_text(s, index) else {
-			print(String(cString: sqlite3_errmsg(s)))
-			assertionFailure()
-			return ""
-		}
-		
-		return String(cString: p)
+	func unbind(at index: Int32) -> String {
+		return .init(pointer, at: index)
 	}
 	
-	private static func unbind(from s: OpaquePointer, at index: Int32) -> Date {
-		let str = unbind(from: s, at: index) as String
-		return dateFormatter.date(from: str)!
+	func unbind(at index: Int32) -> Severity {
+		return .init(pointer, at: index)
 	}
 	
-	private static func unbind(from s: OpaquePointer, at index: Int32) -> Int64 {
-		return sqlite3_column_int64(s, index)
+	func unbind(at index: Int32) -> Int64 {
+		return .init(pointer, at: index)
 	}
 	
-	private static func unbind(from s: OpaquePointer, at index: Int32) -> Severity {
-		let value = UInt8(sqlite3_column_int(s, index))
-		return Severity(rawValue: value)!
+	func unbind(at index: Int32) -> Date {
+		return .init(pointer, at: index)
 	}
 	
-	static func unbind(from s: OpaquePointer) -> Entry {
-		
-		return Entry(id: unbind(from: s, at: 0),
-					 bundleID: unbind(from: s, at: 5),
-					 userID: UUID(uuidString: unbind(from: s, at: 6)),
-					 deviceID: UUID(uuidString: unbind(from: s, at: 7)),
-					 date: unbind(from: s, at: 1),
-					 severity: unbind(from: s, at: 2),
-					 message: unbind(from: s, at: 3),
-					 customData: unbind(from: s, at: 4))
+	func unbind(at index: Int32) -> UInt32 {
+		return .init(pointer, at: index)
 	}
-	
-	static let dateFormatter: DateFormatter = {
-			let formatter = DateFormatter()
-			formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS Z"
-			formatter.timeZone = TimeZone(abbreviation: "UTC")
-			return formatter
-		}()
-	
-	// MARK: - Constants
-	
-	static let select = """
-	SELECT * FROM entries
-	"""
-	
-	static let insert = """
-	INSERT INTO entries (date, severity, message, bundle_id, user_id, device_id, custom_data)
-	VALUES (?, ?, ?, ?, ?, ?, ?);
-	"""
-//		INSERT INTO entries (date, severity, message, bundle_id, user_id, device_id, custom_data)
-//		VALUES (SELECT strftime('\(dateTimeFormat)', "\(offset)", "unixepoch"), ?, ?, ?, ?, ?, ?);
-	
-	
-	static let createTable = """
-	CREATE TABLE IF NOT EXISTS entries (
-	  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	  date timestamp(128) NOT NULL,
-	  severity int(8) NOT NULL,
-	  message text NOT NULL,
-	  custom_data text NOT NULL,
-	  bundle_id text NOT NULL,
-	  user_id char NOT NULL,
-	  device_id char NOT NULL
-	);
-	"""
-	
-	static let dropTable = """
-	DROP TABLE IF EXISTS entries;
-	"""
 }

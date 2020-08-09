@@ -21,13 +21,13 @@ final class LogModelTests: XCTestCase {
     func test_writeReadData_inLocalStorage() {
 		
 		let entry = Entry(id: nil,
-						  bundleID: "com.duct-ape-productions.LogModel",
-						  userID: nil,
-						  deviceID: UUID(),
 						  date: Date(),
 						  severity: .verbose,
 						  message: "tapped Login button",
-						  customData: "")
+						  customData: "",
+						  bundleID: "com.duct-ape-productions.LogModel",
+						  userID: nil,
+						  deviceID: UUID())
 		
 		db.record(entry)
 		

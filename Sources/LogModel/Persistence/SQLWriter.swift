@@ -9,59 +9,31 @@ import Foundation
 import SQLite3
 
 
-class SQLWriter: SQLConnection, Writer {
-	private var writeStatement: OpaquePointer!
+final class SQLWriter: SQLConnection, Writer {
+	private var statement: Statement!
 	
-	
-	private func createTable() {
-		
-		var s: OpaquePointer!
-		
-		var status = sqlite3_prepare_v2(connection, Statement.createTable, -1, &s, nil)
-		
-		defer {
-			sqlite3_finalize(s)
-		}
-		
-		assert(status == SQLITE_OK)
-		
-		status = sqlite3_step(s)
-		
-		assert(status == SQLITE_DONE)
-	}
-		
-	private func prepareStatement() {
-		assert(self.connection != nil)
-		
-		let status = sqlite3_prepare_v2(self.connection, Statement.insert, -1, &writeStatement, nil)
-		
-		if status != SQLITE_OK {
-			print(getErrorMessage())
-		}
-	}
-	
-	private func finalize() {
-		assert(writeStatement != nil)
-		
-		let value = sqlite3_finalize(writeStatement)
-		
-		guard value == SQLITE_OK else {
-			preconditionFailure()
-		}
+	override init(dir: URL, name: String) {
+		super.init(dir: dir, name: name)
 	}
 	
 	override func connect() {
 		super.connect()
 		
-		assert(writeStatement == nil)
+		assert(statement == nil)
 		
-		createTable()
-		prepareStatement()
+		Entry.createTable(in: connection)
+		
+		let query = """
+		INSERT INTO entries (date, severity, message, bundle_id, user_id, device_id, custom_data)
+		VALUES (?, ?, ?, ?, ?, ?, ?);
+		"""
+		
+		statement = Statement(in: connection, query: query)
 	}
 	
 	override func disconnect() {
-		finalize()
-
+		statement.finalize()
+		statement = nil
 		super.disconnect()
 	}
 }
@@ -72,16 +44,57 @@ extension SQLWriter {
 	func write(_ entry: Entry) {
 		
 		defer {
-			sqlite3_reset(writeStatement)
-			sqlite3_clear_bindings(writeStatement)
+			statement.reset()
 		}
 		
-		Statement.bind(entry, into: writeStatement)
+		entry.bind(statement)
 		
-		let status = sqlite3_step(writeStatement)
+		let status = statement.step()
 		
 		guard status == SQLITE_DONE else {
 			preconditionFailure()
 		}
+	}
+	
+	
+	func setMostRecentlySyncedID(_ data: SyncData) {
+		
+		// set the value
+		let query = """
+		INSERT INTO synced_data (id, date)
+		VALUES (?, ?);
+		"""
+		
+		let statement = Statement(in: connection, query: query)
+		
+		defer { statement.finalize() }
+		
+		data.bind(statement)
+		
+		let status = statement.step()
+		
+		guard status == SQLITE_OK else {
+			preconditionFailure()
+		}
+	}
+	
+	func getMostRecentlySync() -> SyncData? {
+		
+		let query = """
+		SELECT (MAX(id), date)
+		FROM synced_data;
+		"""
+		
+		let statement = Statement(in: connection, query: query)
+		
+		defer { statement.finalize() }
+		
+		let status = statement.step()
+		
+		guard status == SQLITE_OK else {
+			preconditionFailure()
+		}
+		
+		return .init(from: statement)
 	}
 }

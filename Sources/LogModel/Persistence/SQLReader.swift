@@ -8,40 +8,9 @@
 import struct Foundation.URL
 import SQLite3
 
-class SQLReader: SQLConnection, Reader {
-	
-	private var statement: OpaquePointer!
-	
-	
-	override func connect() {
-		super.connect()
 
-		assert(statement == nil)
-
-		prepareStatement()
-	}
+final class SQLReader: SQLConnection, Reader {
 	
-	override func disconnect() {
-		finalize()
-
-		super.disconnect()
-	}
-	
-	private func prepareStatement() {
-		assert(self.connection != nil)
-		
-		let status = sqlite3_prepare_v2(self.connection, Statement.select, -1, &statement, nil)
-		
-		if status != SQLITE_OK {
-			print(status)
-		}
-	}
-	
-	private func finalize() {
-		assert(statement != nil)
-		
-		sqlite3_finalize(statement)
-	}
 }
 
 // MARK: - Reader Conformance
@@ -49,22 +18,30 @@ extension SQLReader {
 	
 	func get(firstID: Int64, max: UInt32) -> [Entry] {
 		
-		defer {
-			sqlite3_reset(statement)
-			sqlite3_clear_bindings(statement)
-		}
-		
-//		Statement.bind(firstID, to: statement, at: 1)
-//		Statement.bind(Int64(max), to: statement, at: 1)
-		
-		var status = sqlite3_step(statement)
-		
 		var results = [Entry]()
 		
+		let query = """
+		SELECT *
+		FROM entries
+		WHERE id >= ?
+		LIMIT ?;
+		"""
+		
+		let statement = Statement(in: connection, query: query)
+		
+		defer {
+			statement.finalize()
+		}
+		
+		statement.bind(firstID, at: 1)
+		statement.bind(max, at: 2)
+		
+		var status = statement.step()
+		
 		while status == SQLITE_ROW {
-			results.append(Statement.unbind(from: statement))
+			results.append(.init(statement))
 			
-			status = sqlite3_step(statement)
+			status = statement.step()
 		}
 		
 		return results
