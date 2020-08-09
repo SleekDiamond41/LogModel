@@ -14,11 +14,8 @@ final class LogModelTests: XCTestCase {
 	
 	override func tearDown() {
 		db?.disconnect()
-		do {
-			try FileManager.default.removeItem(at: dir.url.appendingPathComponent("Data").appendingPathExtension("sqlite"))
-		} catch {
-			print(String(describing: error))
-		}
+		
+		dir.file("Data", ext: "sqlite").delete()
 	}
 	
     func test_writeReadData_inLocalStorage() {
@@ -47,8 +44,8 @@ final class LogModelTests: XCTestCase {
 		XCTAssertEqual(result.message, entry.message)
 		XCTAssertEqual(result.customData, entry.customData)
 		
-		let diff = result.date.distance(to: entry.date)
+		let diff = abs(result.date.distance(to: entry.date))
 		
-		XCTAssertLessThan(diff, 0.002)
+		XCTAssertLessThan(diff, 0.0005)
     }
 }
