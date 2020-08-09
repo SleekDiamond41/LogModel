@@ -16,7 +16,7 @@ public enum Severity: UInt8, Codable {
 	/// General information, such as user interactions
 	case info = 2
 	
-	/// Entered a rercoverable state.
+	/// Entered an unfortunate, but rercoverable state.
 	case warning = 3
 	
 	/// Entered an unrecoverable state.

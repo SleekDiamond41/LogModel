@@ -14,10 +14,13 @@ extension Entry {
 		statement.bind(date, at: 1)
 		statement.bind(severity, at: 2)
 		statement.bind(message, at: 3)
-		statement.bind(bundleID, at: 4)
-		statement.bind(userID?.uuidString ?? "", at: 5)
-		statement.bind(deviceID?.uuidString ?? "", at: 6)
-		statement.bind(customData ?? "", at: 7)
+		statement.bind(file, at: 4)
+		statement.bind(function, at: 5)
+		statement.bind(line, at: 6)
+		statement.bind(bundleID, at: 7)
+		statement.bind(userID?.uuidString ?? "", at: 8)
+		statement.bind(deviceID?.uuidString ?? "", at: 9)
+		statement.bind(customData ?? "", at: 10)
 	}
 	
 	init(_ statement: Statement) {
@@ -25,23 +28,29 @@ extension Entry {
 				  date: statement.unbind(at: 1),
 				  severity: statement.unbind(at: 2),
 				  message: statement.unbind(at: 3),
-				  customData: statement.unbind(at: 4),
-				  bundleID: statement.unbind(at: 5),
-				  userID: UUID(uuidString: statement.unbind(at: 6)),
-				  deviceID: UUID(uuidString: statement.unbind(at: 7)))
+				  file: statement.unbind(at: 4),
+				  function: statement.unbind(at: 5),
+				  line: statement.unbind(at: 6),
+				  customData: statement.unbind(at: 7),
+				  bundleID: statement.unbind(at: 8),
+				  userID: UUID(uuidString: statement.unbind(at: 9)),
+				  deviceID: UUID(uuidString: statement.unbind(at: 10)))
 	}
 	
 	static func createTable(in db: OpaquePointer) {
 		let query = """
 		CREATE TABLE IF NOT EXISTS entries (
 			id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-			date timestamp(128) NOT NULL,
-			severity int(8) NOT NULL,
-			message text NOT NULL,
-			custom_data text NOT NULL,
-			bundle_id text NOT NULL,
-			user_id char NOT NULL,
-			device_id char NOT NULL
+			date TIMESTAMP(128) NOT NULL,
+			severity INTEGER(8) NOT NULL,
+			message TEXT NOT NULL,
+			file TEXT NOT NULL,
+			function TEXT NOT NULL,
+			line INTEGER NOT NULL,
+			custom_data TEXT NOT NULL,
+			bundle_id TEXT NOT NULL,
+			user_id TEXT NOT NULL,
+			device_id TEXT NOT NULL
 		);
 		"""
 		

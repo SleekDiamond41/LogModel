@@ -9,13 +9,13 @@ final class LogModelTests: XCTestCase {
 	
 	override func setUp() {
 		print(dir.url)
-		db = Database(dir: dir.url, name: "Data")
+		db = Database(dir: dir.url, name: "Data").connect()
 	}
 	
 	override func tearDown() {
 		db?.disconnect()
 		
-		dir.file("Data", ext: "sqlite").delete()
+		dir.file("Data", .sqlite).delete()
 	}
 	
     func test_writeReadData_inLocalStorage() {
@@ -24,6 +24,9 @@ final class LogModelTests: XCTestCase {
 						  date: Date(),
 						  severity: .verbose,
 						  message: "tapped Login button",
+						  file: #file,
+						  function: #function,
+						  line: #line,
 						  customData: "",
 						  bundleID: "com.duct-ape-productions.LogModel",
 						  userID: nil,
@@ -37,12 +40,15 @@ final class LogModelTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(result.id, 1)
+		XCTAssertEqual(result.severity, entry.severity)
+		XCTAssertEqual(result.message, entry.message)
+		XCTAssertEqual(result.file, entry.file)
+		XCTAssertEqual(result.function, "test_writeReadData_inLocalStorage()")
+		XCTAssertEqual(result.line, entry.line)
+		XCTAssertEqual(result.customData, entry.customData)
 		XCTAssertEqual(result.bundleID, entry.bundleID)
 		XCTAssertEqual(result.userID, entry.userID)
 		XCTAssertEqual(result.deviceID, entry.deviceID)
-		XCTAssertEqual(result.severity, entry.severity)
-		XCTAssertEqual(result.message, entry.message)
-		XCTAssertEqual(result.customData, entry.customData)
 		
 		let diff = abs(result.date.distance(to: entry.date))
 		

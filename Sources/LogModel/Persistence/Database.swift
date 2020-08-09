@@ -10,7 +10,10 @@ import struct Foundation.URL
 
 class Database: LocalStorage {
 	
-	private let writer: SQLWriter
+	let dir: URL
+	let name: String
+	
+	private var writer: SQLWriter!
 	
 	
 	deinit {
@@ -18,14 +21,21 @@ class Database: LocalStorage {
 	}
 	
 	init(dir: URL, name: String) {
-		self.writer = SQLWriter(dir: dir, name: name + ".sqlite")
+		self.dir = dir
+		self.name = name
+	}
+	
+	@discardableResult
+	func connect() -> Database {
+		if writer == nil {
+			writer = SQLWriter(dir: dir, name: name + ".sqlite")
+		}
+		
+		return self
 	}
 	
 	func disconnect() {
-		guard writer.isConnected else {
-			return
-		}
-		writer.disconnect()
+		writer = nil
 	}
 }
 

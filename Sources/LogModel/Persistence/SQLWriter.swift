@@ -16,8 +16,8 @@ final class SQLWriter: SQLConnection {
 		SyncData.createTable(in: connection)
 		
 		let query = """
-		INSERT INTO entries (date, severity, message, bundle_id, user_id, device_id, custom_data)
-		VALUES (?, ?, ?, ?, ?, ?, ?);
+		INSERT INTO entries (date, severity, message, file, function, line, bundle_id, user_id, device_id, custom_data)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 		"""
 		
 		statement = Statement(in: connection, query: query)

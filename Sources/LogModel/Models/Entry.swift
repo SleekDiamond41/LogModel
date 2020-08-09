@@ -8,6 +8,9 @@ public struct Entry: Codable {
 	public let date: Date
 	public let severity: Severity
 	public let message: String
+	public let file: String
+	public let function: String
+	public let line: UInt32
 	public let customData: String?
 	public let bundleID: String
 	public let userID: UUID?
