@@ -2,6 +2,12 @@ import XCTest
 import Files
 @testable import LogModel
 
+
+extension Log.Category {
+	static let logModelTests = Log.Category("logModelTests")
+}
+
+@available(OSX 10.12, iOS 10.0, *)
 final class LogModelTests: XCTestCase {
 	
 	var log: Log!
@@ -11,23 +17,39 @@ final class LogModelTests: XCTestCase {
 		.first!
 		.appendingPathComponent("Testing")
 		.appendingPathComponent("Logs")
-		.appendingPathComponent(bundle.replacingOccurrences(of: ".", with: "__"))
+		.appendingPathComponent(bundle
+									.replacingOccurrences(of: ".", with: "__"))
 		.appendingPathComponent("LogModelTests")
 	
 	override func setUp() {
 		
-//		print(#filePath)
-//		print(#file)
 		print()
 		print(dir)
 		print()
 		
-		log = Log(bundleID: bundle, userID: nil, deviceID: nil, dir: dir)
+		let backer = LogBacker(
+			bundleID: bundle,
+			userID: nil,
+			deviceID: nil,
+			serverURL: nil,
+			dir: self.dir)
+		
+		log = Log(
+			bundleID: bundle,
+			category: .logModelTests,
+			backer: backer)
 	}
 	
 	override func tearDownWithError() throws {
-		
-		try FileManager.default.removeItem(at: dir)
+		do {
+			try FileManager.default.removeItem(at: dir)
+		} catch let error as NSError {
+			guard error.code == NSFileReadNoSuchFileError else {
+				// no such file, nothing to see here
+				return
+			}
+			throw error
+		}
 	}
 	
 	func wait(_ time: TimeInterval) {
@@ -38,22 +60,6 @@ final class LogModelTests: XCTestCase {
 		}
 		
 		wait(for: [expectation], timeout: time + 0.2)
-	}
-	
-	func test_getDirectoryFile_from_filePath() {
-		let log = Log(bundleID: "", userID: nil, deviceID: nil)
-		let filename = #file
-		
-		// TODO: move this test to a file whose name does not match its containing directory
-		
-		do {
-			let (directory, file) = try log.directoryFile(from: filename)
-			
-			XCTAssertEqual(directory, "LogModelTests")
-			XCTAssertEqual(file, "LogModelTests.swift")
-		} catch {
-			XCTFail(String(describing: error))
-		}
 	}
 	
 	
@@ -68,6 +74,10 @@ final class LogModelTests: XCTestCase {
 			.appendingPathComponent("Standard")
 			.appendingPathComponent("0")
 		
+		print()
+		print(standard.path)
+		print()
+		
 		XCTAssert(FileManager.default.fileExists(atPath: standard.path))
 	}
 	
@@ -76,7 +86,7 @@ final class LogModelTests: XCTestCase {
 			log.verbose("\(i)\t- here's some interesting stuff")
 		}
 		
-		log.log(.error, "here's an error... better add a thing now!")
+		log.error("here's an error... better add a thing now!")
 		
 		let highPriority = dir
 			.appendingPathComponent("HighPriority")

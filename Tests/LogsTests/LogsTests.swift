@@ -8,7 +8,7 @@
 import XCTest
 @testable import Logs
 
-@available(OSX 11.0, *)
+@available(OSX 10.12, iOS 10, *)
 class LogsTests: XCTestCase {
 	
 	let log = Log(subsystem: "com.duct-ape-productions.Logs", category: "tests")

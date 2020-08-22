@@ -3,21 +3,22 @@ import struct Foundation.Date
 import struct Foundation.UUID
 
 /// An entry in the Log
-public struct Entry: Codable, CustomStringConvertible {
-	public let id: Int64?
-	public let date: Date
-	public let severity: Severity
-	public let message: String
-	public let directory: String
-	public let file: String
-	public let function: String
-	public let line: UInt32
-	public let customData: String?
-	public let bundleID: String
-	public let userID: UUID?
-	public let deviceID: UUID?
+struct Entry: Codable, CustomStringConvertible {
+	let id: Int64?
+	let date: Date
+	let severity: Severity
+	let message: String
+	let category: String
+	let directory: String
+	let file: String
+	let function: String
+	let line: UInt32
+	let customData: String?
+	let bundleID: String
+	let userID: UUID?
+	let deviceID: UUID?
 	
-	public var description: String {
+	var description: String {
 		return toCSV()
 	}
 	
@@ -36,7 +37,7 @@ public struct Entry: Codable, CustomStringConvertible {
 		let customDataString = (customData ?? "").toCSVSafe()
 		
 		return """
-		\(id ?? 0),\(dateString),\(severity.rawValue),\(message.toCSVSafe()),\(file.toCSVSafe()),\(function.toCSVSafe()),\(line),\(customDataString),\(bundleID.toCSVSafe()),\(userID?.uuidString ?? ""),\(deviceID?.uuidString ?? "")
+		\(id ?? 0),\(dateString),\(severity.rawValue),\(message.toCSVSafe()),\(category.toCSVSafe()),\(file.toCSVSafe()),\(function.toCSVSafe()),\(line),\(customDataString),\(bundleID.toCSVSafe()),\(userID?.uuidString ?? ""),\(deviceID?.uuidString ?? "")
 		"""
 	}
 }
@@ -46,6 +47,7 @@ extension String {
 	
 	@inlinable
 	func toCSVSafe() -> String {
-		return self.replacingOccurrences(of: ",", with: "?_?_?")
+		let safeDelimiter = "?_?_?"
+		return self.replacingOccurrences(of: ",", with: safeDelimiter)
 	}
 }

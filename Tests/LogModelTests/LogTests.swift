@@ -11,7 +11,7 @@ import Files
 
 import os
 
-@available(OSX 11.0, *)
+@available(OSX 11, iOS 13, *)
 class LogTests: XCTestCase {
 	
 	var log: Log!
@@ -26,10 +26,16 @@ class LogTests: XCTestCase {
 	override func setUp() {
 		print(dir.url.path)
 		
-		log = Log(bundleID: bundleID,
-				  userID: nil,
-				  deviceID: nil,
-				  dir: dir.url)
+		let backer = LogBacker(
+			bundleID: bundleID,
+			userID: nil,
+			deviceID: nil,
+			serverURL: nil)
+		
+		log = Log(
+			bundleID: bundleID,
+			category: .logModelTests,
+			backer: backer)
 	}
 	
 	override func tearDown() {
@@ -55,35 +61,13 @@ class LogTests: XCTestCase {
 	
 	func testTime_savingToFile_CSV() {
 		
-		var count = 1
-		let log = Logger(subsystem: "com.the-duct-ape.Logs", category: "testing-\(count)")
+		let log = Logger(subsystem: "com.the-duct-ape.Logs.LogTests", category: #function)
 		
 		self.measure {
-//			let file = self.dir.appending("testTime_savingToFile").file("\(count)", .txt)
 			
 			for i in 1...1000 {
-//				let entry = Entry(id: nil,	// id will be set by the LocalStorage
-//								  date: Date(),
-//								  severity: .verbose,
-//								  message: "Here is message number \(i)",
-//								  directory: "LogModelTests",
-//								  file: "LogTests.swift",
-//								  function: #function,
-//								  line: #line,
-//								  customData: nil,
-//								  bundleID: "com.the-duct-ape.LogModel.LogModelTests",
-//								  userID: nil,
-//								  deviceID: nil)
-				
 				log.warning("Here is message number \(i)")
-//				do {
-//					try file.append(toCSV(entry).data(using: .utf8)!)
-//				} catch {
-//					XCTFail(String(describing: error))
-//				}
 			}
-			
-			count += 1
 		}
 	}
 	

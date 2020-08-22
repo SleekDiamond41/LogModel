@@ -1,41 +1,14 @@
 //
-//  JSONLinesLocalStorage.swift
+//  StandardLocalStorarge.swift
 //  
 //
 //  Created by Michael Arrington on 8/17/20.
 //
 
 import Foundation
-import OSLog
 
 
-final class Save: Hashable {
-	let id = UUID()
-	let entries: [Entry]
-	
-	init(_ entries: [Entry]) {
-		self.entries = entries
-	}
-}
-
-// MARK: - Equatable Conformance
-extension Save {
-	
-	@inlinable
-	static func ==(left: Save, right: Save) -> Bool {
-		return left.id == right.id
-	}
-}
-
-// MARK: - Hashable Conformance
-extension Save {
-	
-	func hash(into hasher: inout Hasher) {
-		hasher.combine(id)
-	}
-}
-
-final class JSONLinesLocalStorage: LocalStorage {
+final class StandardLocalStorarge: LocalStorage {
 	
 	let file: FileDelegate
 	let highPriorityFile: FileDelegate
@@ -64,7 +37,7 @@ final class JSONLinesLocalStorage: LocalStorage {
 
 
 // MARK: - Local Methods
-extension JSONLinesLocalStorage {
+extension StandardLocalStorarge {
 	
 	@inlinable
 	func clearBuffer() {
@@ -73,17 +46,18 @@ extension JSONLinesLocalStorage {
 	}
 	
 	private func writeImmediately(_ save: Save) {
-		pendingSaves.insert(save)
 		
-		DispatchQueue.global(qos: .userInteractive).sync { [pendingSaves] in
-			// we're saving all the pendingSaves, so capture them and make sure they don't change unexpectedly
-			for save in pendingSaves {
-				self.highPriorityFile.write(save.entries)
-			}
+		let pending = pendingSaves
+		pendingSaves.removeAll()
+		
+		DispatchQueue.global(qos: .userInteractive).sync {
+			// capture the currently pending saves
 			
-			// we've written everything at least once,
-			// no reason to leave pendingSaves open
 			self.pendingSaves.removeAll()
+			
+			self.highPriorityFile.write(
+				pending.flatMap { $0.entries } + save.entries
+			)
 		}
 	}
 	
@@ -102,7 +76,7 @@ extension JSONLinesLocalStorage {
 
 
 // MARK: - LocalStorage Conformance
-extension JSONLinesLocalStorage {
+extension StandardLocalStorarge {
 	
 	func log(_ entry: Entry) {
 		buffer.append(entry)
