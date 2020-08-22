@@ -6,7 +6,7 @@
 //
 
 /// The severity of a message.
-public enum Severity: UInt8, Codable {
+public enum Severity: UInt8, Codable, Comparable {
 	/// Extra information that might be useful to have, such as entering or exiting low-level functions.
 	case verbose = 0
 	
@@ -24,4 +24,12 @@ public enum Severity: UInt8, Codable {
 	
 	/// The program entered a state that should not be possible.
 	case wtf = 5
+}
+
+// MARK: - Comparable Conformance
+extension Severity {
+	
+	public static func <(left: Severity, right: Severity) -> Bool {
+		return left.rawValue < right.rawValue
+	}
 }

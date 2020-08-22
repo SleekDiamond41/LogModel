@@ -4,54 +4,84 @@ import Files
 
 final class LogModelTests: XCTestCase {
 	
-	var db: Database!
-	let dir = Directory.appSupport.testing.LogModelTests
+	var log: Log!
+	
+	let bundle = "com.duct-ape-productions.LogModel"
+	lazy var dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+		.first!
+		.appendingPathComponent("Testing")
+		.appendingPathComponent("Logs")
+		.appendingPathComponent(bundle.replacingOccurrences(of: ".", with: "__"))
+		.appendingPathComponent("LogModelTests")
 	
 	override func setUp() {
-		print(dir.url)
-		db = Database(dir: dir.url, name: "Data").connect()
+		
+//		print(#filePath)
+//		print(#file)
+		print()
+		print(dir)
+		print()
+		
+		log = Log(bundleID: bundle, userID: nil, deviceID: nil, dir: dir)
 	}
 	
-	override func tearDown() {
-		db?.disconnect()
+	override func tearDownWithError() throws {
 		
-		dir.file("Data", .sqlite).delete()
+		try FileManager.default.removeItem(at: dir)
 	}
 	
-    func test_writeReadData_inLocalStorage() {
+	func wait(_ time: TimeInterval) {
+		let expectation = XCTestExpectation()
 		
-		let entry = Entry(id: nil,
-						  date: Date(),
-						  severity: .verbose,
-						  message: "tapped Login button",
-						  file: #file,
-						  function: #function,
-						  line: #line,
-						  customData: "",
-						  bundleID: "com.duct-ape-productions.LogModel",
-						  userID: nil,
-						  deviceID: UUID())
-		
-		db.log(entry)
-		
-		guard let result = db.getSyncBatch(max: 1).first else {
-			XCTFail("found no results from the database")
-			return
+		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { (_) in
+			expectation.fulfill()
 		}
 		
-		XCTAssertEqual(result.id, 1)
-		XCTAssertEqual(result.severity, entry.severity)
-		XCTAssertEqual(result.message, entry.message)
-		XCTAssertEqual(result.file, entry.file)
-		XCTAssertEqual(result.function, "test_writeReadData_inLocalStorage()")
-		XCTAssertEqual(result.line, entry.line)
-		XCTAssertEqual(result.customData, entry.customData)
-		XCTAssertEqual(result.bundleID, entry.bundleID)
-		XCTAssertEqual(result.userID, entry.userID)
-		XCTAssertEqual(result.deviceID, entry.deviceID)
+		wait(for: [expectation], timeout: time + 0.2)
+	}
+	
+	func test_getDirectoryFile_from_filePath() {
+		let log = Log(bundleID: "", userID: nil, deviceID: nil)
+		let filename = #file
 		
-		let diff = abs(result.date.distance(to: entry.date))
+		// TODO: move this test to a file whose name does not match its containing directory
 		
-		XCTAssertLessThan(diff, 0.0005)
-    }
+		do {
+			let (directory, file) = try log.directoryFile(from: filename)
+			
+			XCTAssertEqual(directory, "LogModelTests")
+			XCTAssertEqual(file, "LogModelTests.swift")
+		} catch {
+			XCTFail(String(describing: error))
+		}
+	}
+	
+	
+	func testStandardLog() {
+		for i in 0...111 {
+			log.verbose("\(i)\t- here's some interesting stuff")
+		}
+		
+		wait(2)
+		
+		let standard = dir
+			.appendingPathComponent("Standard")
+			.appendingPathComponent("0")
+		
+		XCTAssert(FileManager.default.fileExists(atPath: standard.path))
+	}
+	
+	func testHighPriorityLog() {
+		for i in 0...10 {
+			log.verbose("\(i)\t- here's some interesting stuff")
+		}
+		
+		log.log(.error, "here's an error... better add a thing now!")
+		
+		let highPriority = dir
+			.appendingPathComponent("HighPriority")
+			.appendingPathComponent("0")
+		
+		XCTAssert(FileManager.default.fileExists(atPath: highPriority.path))
+	}
 }
