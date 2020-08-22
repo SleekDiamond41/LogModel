@@ -10,12 +10,6 @@ let package = Package(
         .library(
             name: "LogModel",
             targets: ["LogModel"]),
-		.library(
-			name: "Logs",
-			targets: ["Logs"]),
-		.library(
-			name: "Logger",
-			targets: ["Logger"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -27,18 +21,8 @@ let package = Package(
         .target(
             name: "LogModel",
             dependencies: ["Files"]),
-		.target(
-			name: "Logs",
-			dependencies: []),
-		.target(
-			name: "Logger",
-			dependencies: []),
-		
 		.testTarget(
 			name: "LogModelTests",
 			dependencies: ["LogModel"]),
-		.testTarget(
-			name: "LogsTests",
-			dependencies: ["Logs"]),
     ]
 )
