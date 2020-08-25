@@ -76,26 +76,29 @@ extension MyFileDelegate {
 		let url = filenameProvider.currentFile()
 		
 		do {
+			guard let newLineData = "\n".data(using: .utf8) else {
+				os_log("failed to encode newline character ('\\n') to utf8 encoding. This shouldn't be possible.", log: logger, type: .fault)
+				return
+			}
+			
 			var data = Data(try entries
 								.map { try encoder.encode($0) }
-								.joined(separator: "\n".data(using: .utf8)!))
-			
-			let handle = try FileHandle(forUpdating: url)
+								.joined(separator: newLineData))
 			
 			if currentLineCount == 0 {
 				// TODO: also write some meta-data,
 				// i.e. date, version number
 				// maybe bundle name, userID, and deviceID at the
 				// top of each line and skip writing them on each line
-				data = metaData() + data
+				data = metaData() + newLineData + data
+				try data.write(to: url)
 			} else {
 				
-				// only need to go to end of file if we're continuing an existing file
+				let handle = try FileHandle(forUpdating: url)
 				handle.seekToEndOfFile()
+				handle.write(data)
+				handle.closeFile()
 			}
-			
-			handle.write(data)
-			handle.closeFile()
 			
 			currentLineCount += count
 			

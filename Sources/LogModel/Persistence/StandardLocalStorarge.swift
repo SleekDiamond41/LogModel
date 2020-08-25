@@ -88,7 +88,7 @@ extension StandardLocalStorarge {
 			clearBuffer()
 			writeImmediately(save)
 			
-		} else if buffer.count > maxBufferSize {
+		} else if buffer.count >= maxBufferSize {
 			// we filled up on entries, write them lazily
 			let save = Save(buffer)
 			clearBuffer()

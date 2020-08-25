@@ -16,8 +16,7 @@ final class LogModelTests: XCTestCase {
 		.first!
 		.appendingPathComponent("Testing")
 		.appendingPathComponent("Logs")
-		.appendingPathComponent(bundle
-									.replacingOccurrences(of: ".", with: "__"))
+		.appendingPathComponent(bundle)
 		.appendingPathComponent("LogModelTests")
 	
 	override func setUp() {
