@@ -44,7 +44,7 @@ extension MyServer {
 						throw error!
 					}
 					
-					guard let data = data, let response = response else {
+					guard let _ = data, let _ = response else {
 						throw ResponseError.invalidData
 					}
 					

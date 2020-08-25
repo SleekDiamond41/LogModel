@@ -162,7 +162,6 @@ extension Log {
 				   line: line)
 	}
 	
-	
 	/// The program entered a state that should not be possible.
 	///
 	/// On the order of:

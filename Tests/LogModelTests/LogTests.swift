@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import Files
 @testable import LogModel
 
 import os
@@ -17,14 +16,16 @@ class LogTests: XCTestCase {
 	var log: Log!
 	
 	let bundleID = "com.duct-ape-productions.LogModel"
-	lazy var dir = Directory.appSupport
-		.Testing
-		.Logs
-		.appending(bundleID.replacingOccurrences(of: ".", with: "__"))
-		.appending("LogModelTests")
+	lazy var dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+		.first!
+		.appendingPathComponent("Testing")
+		.appendingPathComponent("Logs")
+		.appendingPathComponent(bundleID)
+		.appendingPathComponent("LogTests")
+	
 	
 	override func setUp() {
-		print(dir.url.path)
+		print(dir.path)
 		
 		let backer = LogBacker(
 			bundleID: bundleID,
@@ -38,10 +39,18 @@ class LogTests: XCTestCase {
 			backer: backer)
 	}
 	
-	override func tearDown() {
+	override func tearDownWithError() throws {
 		log = nil
 		
-		dir.delete()
+		do {
+			try FileManager.default.removeItem(at: dir)
+		} catch let error as NSError {
+			guard error.code == NSFileReadNoSuchFileError else {
+				// no such file, nothing to see here
+				return
+			}
+			throw error
+		}
 	}
 	
 	func testWriteVerbose() {

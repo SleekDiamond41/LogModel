@@ -16,7 +16,9 @@ final class MyFileDelegate: FileDelegate {
 	/// This delegate prefers to keep the number of lines per file below a certain threshold,
 	/// but may write more lines to a single file if sent in a single `write(_:)` call.
 	let preferredMaxLinesPerFile: Limit = 10_000
-	let version: Version = (0, 0, 0)
+	
+	private let meta = MetaData()
+	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "WritingData")
 	
 	private var currentLineCount: Limit = 0
 	
@@ -28,7 +30,7 @@ final class MyFileDelegate: FileDelegate {
 	}
 	
 	private struct MetaData: Encodable {
-		let version: Version
+		let version: Version = (0, 0, 0)
 		
 		func encode(to encoder: Encoder) throws {
 			var container = encoder.container(keyedBy: CodingKeys.self)
@@ -42,8 +44,18 @@ final class MyFileDelegate: FileDelegate {
 	}
 	
 	private func metaData() -> Data {
-//		version
-		return Data()
+		let encoder = JSONEncoder()
+		
+		do {
+			return try encoder.encode(meta)
+		} catch {
+			os_log("failed to encode MetaData '%s' to JSON with message '%s'",
+				   log: logger,
+				   type: .fault,
+				   String(describing: meta), error.localizedDescription)
+			
+			preconditionFailure()
+		}
 	}
 }
 
@@ -68,21 +80,26 @@ extension MyFileDelegate {
 								.map { try encoder.encode($0) }
 								.joined(separator: "\n".data(using: .utf8)!))
 			
+			let handle = try FileHandle(forUpdating: url)
+			
 			if currentLineCount == 0 {
 				// TODO: also write some meta-data,
 				// i.e. date, version number
-				// maybe bundle name, userID, and deviceID at the top of each line and skip writing them on each line
-				data = "".data(using: .utf8)! + data
+				// maybe bundle name, userID, and deviceID at the
+				// top of each line and skip writing them on each line
+				data = metaData() + data
+			} else {
+				
+				// only need to go to end of file if we're continuing an existing file
+				handle.seekToEndOfFile()
 			}
 			
-			// FIXME: actually _append_ data to the file
-			// so we'rer not overwriting what's there
-			try data.write(to: url)
+			handle.write(data)
+			handle.closeFile()
 			
 			currentLineCount += count
 			
 		} catch {
-			let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "WritingData")
 			os_log("failed to save %d entries to file at '%s' with message '%s'", log: logger, type: .fault, entries.count, url.absoluteString, error.localizedDescription)
 		}
 	}
