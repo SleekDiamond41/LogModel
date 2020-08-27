@@ -2,6 +2,7 @@ import XCTest
 @testable import LogModel
 
 
+@available(iOS 10.0, *)
 extension Log.Category {
 	static let logModelTests = Log.Category("logModelTests")
 }

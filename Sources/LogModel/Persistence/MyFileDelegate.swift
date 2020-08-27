@@ -63,6 +63,43 @@ final class MyFileDelegate: FileDelegate {
 @available(OSX 10.12, iOS 10.0, *)
 extension MyFileDelegate {
 	
+	@inlinable
+	func encode(_ entries: [Entry]) -> [Data?] {
+		let group = DispatchGroup()
+		var results = [Data?](repeating: nil, count: entries.count)
+		
+		let queue = DispatchQueue(label: "com.stuff.mystuff.temp-my-example", qos: .userInitiated)
+		
+		for i in entries.indices {
+			group.enter()
+			
+			DispatchQueue.global(qos: .userInitiated).async {
+				
+				do {
+					// encode each entry concurrently
+					let encoder = JSONEncoder()
+					let result = try encoder.encode(entries[i])
+					
+					queue.async {
+						
+						// accessing the array concurrently has been causing
+						// some issues, so we move that interaction onto a
+						// serial queue
+						results[i] = result
+						group.leave()
+					}
+				} catch {
+					group.leave()
+					preconditionFailure(String(describing: error))
+				}
+			}
+		}
+		
+		group.wait()
+		
+		return results
+	}
+	
 	func write(_ entries: [Entry]) {
 		let count = Limit(entries.count)
 		
@@ -72,8 +109,8 @@ extension MyFileDelegate {
 			currentLineCount = 0
 		}
 		
-		let encoder = JSONEncoder()
 		let url = filenameProvider.currentFile()
+		let results = encode(entries)
 		
 		do {
 			guard let newLineData = "\n".data(using: .utf8) else {
@@ -81,8 +118,8 @@ extension MyFileDelegate {
 				return
 			}
 			
-			var data = Data(try entries
-								.map { try encoder.encode($0) }
+			var data = Data(results
+								.compactMap { $0 }
 								.joined(separator: newLineData))
 			
 			if currentLineCount == 0 {

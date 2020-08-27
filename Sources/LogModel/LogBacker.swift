@@ -11,6 +11,35 @@ extension FileManager {
 	static let local = FileManager()
 }
 
+protocol DirectoryProviding {
+	var dir: URL { get }
+}
+
+class UserDefaultsStoredDirectoryProviding: DirectoryProviding {
+	
+	/// A randomly selected key that indicates
+	let dirNameKey = "8729871087983720834"
+	
+	let root: URL
+	
+	init(root: URL) {
+		self.root = root
+	}
+	
+	lazy var dir: URL = {
+		let name: String
+		
+		if let dir = UserDefaults.standard.string(forKey: dirNameKey) {
+			name = dir
+		} else {
+			name = UUID().uuidString
+			UserDefaults.standard.set(name, forKey: dirNameKey)
+		}
+		
+		return root.appendingPathComponent(name)
+	}()
+}
+
 
 /// The entry point for logging events.
 ///
@@ -23,7 +52,7 @@ extension FileManager {
 @available(OSX 10.12, iOS 10.0, *)
 class LogBacker: CustomStringConvertible {
 	
-	let storage: LocalStorage
+	let storage: Backer
 	let directory: URL
 	let queue: DispatchQueue
 	
@@ -37,6 +66,14 @@ class LogBacker: CustomStringConvertible {
 		return "Log - \(directory.path)"
 	}
 	
+	init(bundleID: String, userID: UUID?, deviceID: UUID?, storage: Backer) {
+		self.bundleID = bundleID
+		self.userID = userID
+		self.deviceID = deviceID
+		self.storage = storage
+		self.queue = DispatchQueue(label: bundleID + ".Log.worker.\(UUID())", qos: .userInteractive)
+		self.directory = FileManager.local.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+	}
 	
 	/// - Parameters:
 	///   - bundleID: the identifier of the program's Bundle
@@ -124,7 +161,7 @@ class LogBacker: CustomStringConvertible {
 				preconditionFailure("unknown error type")
 			}
 			
-			self.storage.log(Entry(id: nil,	// id will be set by the LocalStorage
+			self.storage.log(Entry(id: nil,	// id will be set by the Backer
 								   date: date,
 								   severity: severity,
 								   message: message,

@@ -8,7 +8,7 @@
 import Foundation
 
 
-final class StandardLocalStorarge: LocalStorage {
+final class StandardLocalStorarge: Backer {
 	
 	let file: FileDelegate
 	let highPriorityFile: FileDelegate
@@ -20,7 +20,7 @@ final class StandardLocalStorarge: LocalStorage {
 	private var pendingSaves = Set<Save>()
 	
 	
-	init(_ file: FileDelegate, highPriorityFile: FileDelegate, maxBufferSize: Int = 100) {
+	init(_ file: FileDelegate, highPriorityFile: FileDelegate, maxBufferSize: Int = 1000) {
 		self.file = file
 		self.highPriorityFile = highPriorityFile
 		self.maxBufferSize = maxBufferSize
@@ -53,8 +53,6 @@ extension StandardLocalStorarge {
 		DispatchQueue.global(qos: .userInteractive).sync {
 			// capture the currently pending saves
 			
-			self.pendingSaves.removeAll()
-			
 			self.highPriorityFile.write(
 				pending.flatMap { $0.entries } + save.entries
 			)
@@ -75,7 +73,7 @@ extension StandardLocalStorarge {
 }
 
 
-// MARK: - LocalStorage Conformance
+// MARK: - Backer Conformance
 extension StandardLocalStorarge {
 	
 	func log(_ entry: Entry) {

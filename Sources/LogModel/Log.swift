@@ -69,10 +69,25 @@ extension Log {
 	
 	public private(set) static var common: Log! = {
 		
-		let backer = LogBacker(bundleID: config.bundleID,
-							   userID: config.userID,
-							   deviceID: config.deviceID,
-							   serverURL: config.serverURL)
+		let backer: LogBacker
+		
+		// FIXME: create a robust way to use different Backers based on needs and availability
+		// including SocketBacker... which can feasibly work!
+		
+		if #available(macOS 10.15, iOS 13.0, *) {
+			let storage = SocketBacker()
+			
+			backer = LogBacker(bundleID: config.bundleID,
+								   userID: config.userID,
+								   deviceID: config.deviceID,
+								   storage: storage)
+		} else {
+			backer = LogBacker(bundleID: config.bundleID,
+								   userID: config.userID,
+								   deviceID: config.deviceID,
+								   serverURL: config.serverURL)
+		}
+		
 		
 		return Log(bundleID: config.bundleID,
 				   category: .common,

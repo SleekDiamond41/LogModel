@@ -4,7 +4,7 @@ import struct Foundation.UUID
 
 /// An entry in the Log
 struct Entry: Codable, CustomStringConvertible {
-	let id: Int64?
+	var id: UInt64?
 	let date: Date
 	let severity: Severity
 	let message: String
@@ -22,6 +22,35 @@ struct Entry: Codable, CustomStringConvertible {
 		return toCSV()
 	}
 	
+	init(id: UInt64?,
+		 date: Date,
+		 severity: Severity,
+		 message: String,
+		 category: String,
+		 directory: String,
+		 file: String,
+		 function: String,
+		 line: UInt32,
+		 customData: String?,
+		 bundleID: String,
+		 userID: UUID?,
+		 deviceID: UUID?
+	) {
+		
+		self.id = id
+		self.date = date
+		self.severity = severity
+		self.message = message
+		self.category = category
+		self.directory = directory
+		self.file = file
+		self.function = function
+		self.line = line
+		self.customData = customData
+		self.bundleID = bundleID
+		self.userID = userID
+		self.deviceID = deviceID
+	}
 	// TODO: remove bundleID, deviceID, and maybe userID from Entry
 	// these data should be stored as related to a group of entries,
 	// it is redundant to have them for each individual entry
