@@ -83,14 +83,12 @@ class LogTests: XCTestCase {
 	}
 	
 	func testTime_savingToFile_JSON() {
-		let s: StaticString = "Hello, World"
-		print(s.description)
 		
 		self.measure {
 			
 			for i in 1...999 {
-					let threadName = Thread.current.hash
-					self.log.verbose("Here is message number \(i) on thread '\(threadName)'")
+				let threadName = Thread.current.hash
+				self.log.verbose("Here is message number \(i) on thread '\(threadName)'")
 			}
 			log.error("something real bad happened, gotta record immediately")
 		}
@@ -99,7 +97,8 @@ class LogTests: XCTestCase {
 	func testTime_savingToDatabase() {
 		self.measure {
 			for i in 1...1000 {
-				log.verbose("Here is message number \(i)")
+				let threadName = Thread.current.hash
+				self.log.verbose("Here is message number \(i) on thread '\(threadName)'")
 			}
 		}
 	}

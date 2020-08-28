@@ -14,6 +14,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
 		.package(name: "Starscream", url: "https://github.com/daltoniam/Starscream.git", from: "4.0.4"),
+		.package(name: "CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMinor(from: "1.3.1"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -22,6 +23,7 @@ let package = Package(
             name: "LogModel",
             dependencies: [
 				.product(name: "Starscream", package: "Starscream"),
+				.product(name: "CryptoSwift", package: "CryptoSwift"),
 			]),
 		.testTarget(
 			name: "LogModelTests",

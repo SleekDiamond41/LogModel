@@ -11,36 +11,22 @@ import OSLog
 final class MyFileDelegate: FileDelegate {
 	
 	typealias Limit = UInt16
-	typealias Version = (UInt8, UInt8, UInt8)
 	
 	/// This delegate prefers to keep the number of lines per file below a certain threshold,
 	/// but may write more lines to a single file if sent in a single `write(_:)` call.
-	let preferredMaxLinesPerFile: Limit = 10_000
+	let preferredMaxLinesPerFile: Limit
 	
 	private let meta = MetaData()
 	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "WritingData")
 	
 	private var currentLineCount: Limit = 0
 	
-	private let filenameProvider: FilenameProviding
+	private var filenameProvider: FilenameProviding
 	
 	
-	init(filename: FilenameProviding) {
+	init(filename: FilenameProviding, preferredLinesPerFile: Limit = 10_000) {
 		self.filenameProvider = filename
-	}
-	
-	private struct MetaData: Encodable {
-		let version: Version = (0, 0, 0)
-		
-		func encode(to encoder: Encoder) throws {
-			var container = encoder.container(keyedBy: CodingKeys.self)
-			
-			try container.encode("\(version.0),\(version.1),\(version.2)", forKey: .version)
-		}
-		
-		enum CodingKeys: String, CodingKey {
-			case version
-		}
+		self.preferredMaxLinesPerFile = preferredLinesPerFile
 	}
 	
 	private func metaData() -> Data {
@@ -75,22 +61,18 @@ extension MyFileDelegate {
 			
 			DispatchQueue.global(qos: .userInitiated).async {
 				
-				do {
-					// encode each entry concurrently
-					let encoder = JSONEncoder()
-					let result = try encoder.encode(entries[i])
+				// encode each entry concurrently
+				guard let result = entries[i].toCSV().data(using: .utf8) else {
+					preconditionFailure("failed to encode entry at index '\(i)': \(entries[i])")
+				}
+				
+				queue.async {
 					
-					queue.async {
-						
-						// accessing the array concurrently has been causing
-						// some issues, so we move that interaction onto a
-						// serial queue
-						results[i] = result
-						group.leave()
-					}
-				} catch {
+					// accessing the array concurrently has been causing
+					// some issues, so we move that interaction onto a
+					// serial queue
+					results[i] = result
 					group.leave()
-					preconditionFailure(String(describing: error))
 				}
 			}
 		}
@@ -113,21 +95,24 @@ extension MyFileDelegate {
 		let results = encode(entries)
 		
 		do {
-			guard let newLineData = "\n".data(using: .utf8) else {
+			guard let delimiter = "\n".data(using: .utf8) else {
 				os_log("failed to encode newline character ('\\n') to utf8 encoding. This shouldn't be possible.", log: logger, type: .fault)
 				return
 			}
 			
-			var data = Data(results
-								.compactMap { $0 }
-								.joined(separator: newLineData))
+			
+			let compact = results.compactMap { $0 }
+			assert(compact.count == results.count, "we must have failed to encode one of the Entries")
+			
+			var data = Data(compact.joined(separator: delimiter))
+			
 			
 			if currentLineCount == 0 {
 				// TODO: also write some meta-data,
 				// i.e. date, version number
 				// maybe bundle name, userID, and deviceID at the
 				// top of each line and skip writing them on each line
-				data = metaData() + newLineData + data
+				data = metaData() + delimiter + data
 				try data.write(to: url)
 			} else {
 				

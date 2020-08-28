@@ -57,17 +57,20 @@ final class LogModelTests: XCTestCase {
 		Timer.scheduledTimer(withTimeInterval: time, repeats: false) { (_) in
 			expectation.fulfill()
 		}
-		
-		wait(for: [expectation], timeout: time + 0.2)
+		// timeout doesn't matter, we're just killing time
+		// until the Timer goes off
+		wait(for: [expectation], timeout: time + 1)
 	}
 	
 	
 	func testStandardLog() {
-		for i in 0...111 {
+		for i in 0...1001 {
 			log.verbose("\(i)\t- here's some interesting stuff")
 		}
 		
-		wait(2)
+		// allow time for the background stuff to happen,
+		// encoding data models and writing to a new file
+		wait(1)
 		
 		let standard = dir
 			.appendingPathComponent("Standard")
@@ -80,17 +83,42 @@ final class LogModelTests: XCTestCase {
 		XCTAssert(FileManager.default.fileExists(atPath: standard.path))
 	}
 	
-	func testHighPriorityLog() {
+	func test_highPriorityTasks_save_immediately() {
 		for i in 0...10 {
 			log.verbose("\(i)\t- here's some interesting stuff")
 		}
 		
-		log.error("here's an error... better add a thing now!")
+		let id = UUID()
+		let message = "here's an error... for id '\(id)'"
+		log.error("here's an error... for id \(id, privacy: .public)")
+		
+		// don't wait here... the error message should force a write immediately
 		
 		let highPriority = dir
 			.appendingPathComponent("HighPriority")
 			.appendingPathComponent("0")
 		
 		XCTAssert(FileManager.default.fileExists(atPath: highPriority.path))
+		
+		do {
+			let data = try Data(contentsOf: highPriority)
+			guard let s = String(data: data, encoding: .utf8) else {
+				XCTFail("failed to convert data back into a String")
+				return
+			}
+			
+			guard let lastNewLineIndex = s.lastIndex(of: "\n") else {
+				XCTFail("failed to find a '\n' character in the string '\(s)'")
+				return
+			}
+			let lastEntry = s.suffix(from: s.index(after: lastNewLineIndex))
+			
+			let entry = Entry(from: String(lastEntry))
+			
+			XCTAssertEqual(entry.message, message)
+			
+		} catch {
+			XCTFail(String(describing: error))
+		}
 	}
 }

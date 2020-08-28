@@ -22,7 +22,7 @@ final class FrameworkLog: LogBacker {
 				   serverURL: serverURL)
 	}
 	
-	override func log(_ severity: Severity, _ message: String, category: String, bundleID: String, customData: String?, file: String, function: String, line: UInt32) {
+	override func log(_ severity: Severity, _ message: Message, category: String, bundleID: String, customData: String?, file: String, function: String, line: UInt32) {
 		
 		// record for consumer of framework
 		common?.log(severity,

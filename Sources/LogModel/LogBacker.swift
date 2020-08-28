@@ -146,7 +146,7 @@ class LogBacker: CustomStringConvertible {
 	}
 	
 	
-	func log(_ severity: Severity, _ message: String, category: String, bundleID: String, customData: String?, file: String, function: String, line: UInt32) {
+	func log(_ severity: Severity, _ message: Message, category: String, bundleID: String, customData: String?, file: String, function: String, line: UInt32) {
 		let date = Date()
 		
 		queue.sync {
@@ -161,19 +161,21 @@ class LogBacker: CustomStringConvertible {
 				preconditionFailure("unknown error type")
 			}
 			
-			self.storage.log(Entry(id: nil,	// id will be set by the Backer
-								   date: date,
-								   severity: severity,
-								   message: message,
-								   category: category,
-								   directory: directory,
-								   file: filename,
-								   function: function,
-								   line: line,
-								   customData: customData,
-								   bundleID: self.bundleID,
-								   userID: self.userID,
-								   deviceID: self.deviceID))
+			let entry = Entry(id: nil,	// id will be set by the Backer
+							  date: date,
+							  severity: severity,
+							  message: message,//.string(for: severity <= .debug ? .low : .high),
+							  category: category,
+							  directory: directory,
+							  file: filename,
+							  function: function,
+							  line: line,
+							  customData: customData ?? "",
+							  bundleID: self.bundleID,
+							  userID: self.userID,
+							  deviceID: self.deviceID)
+			
+			self.storage.log(entry)
 		}
 	}
 }

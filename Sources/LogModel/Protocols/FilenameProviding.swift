@@ -9,5 +9,5 @@ import struct Foundation.URL
 
 protocol FilenameProviding {
 	func currentFile() -> URL
-	func advance()
+	mutating func advance()
 }

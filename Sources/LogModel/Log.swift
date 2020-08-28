@@ -117,7 +117,7 @@ extension Log {
 	
 	
 	/// Extra information that might be useful to have, such as entering or exiting low-level functions.
-	public func verbose(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func verbose(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.verbose,
 				   message,
 				   category: category.name,
@@ -130,7 +130,7 @@ extension Log {
 	
 	
 	/// Debugging information. These messages should ideally describe exactly what happened that was incorrect, possible reasons this state may have been entered, and possible solutions to implement that might fix this failure.
-	public func debug(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func debug(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.debug,
 				   message,
 				   category: category.name,
@@ -142,7 +142,7 @@ extension Log {
 	}
 	
 	/// General information, such as user interactions
-	public func info(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func info(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.info,
 				   message,
 				   category: category.name,
@@ -154,7 +154,7 @@ extension Log {
 	}
 	
 	/// Entered an unfortunate, but recoverable state.
-	public func warning(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func warning(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.warning,
 				   message,
 				   category: category.name,
@@ -166,7 +166,7 @@ extension Log {
 	}
 	
 	/// Entered an unrecoverable state.
-	public func error(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func error(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.error,
 				   message,
 				   category: category.name,
@@ -186,7 +186,7 @@ extension Log {
 	///         log.wtf("we _just_ set `a` to 0, but it was nil during the next instruction")
 	///         preconditionFailure()
 	///     }
-	public func wtf(_ message: String, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
+	public func wtf(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
 		backer.log(.wtf,
 				   message,
 				   category: category.name,
