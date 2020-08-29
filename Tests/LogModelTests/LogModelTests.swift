@@ -112,7 +112,8 @@ final class LogModelTests: XCTestCase {
 			}
 			let lastEntry = s.suffix(from: s.index(after: lastNewLineIndex))
 			
-			let entry = Entry(from: String(lastEntry))
+			let coder = EntryCoder(version: (0, 0, 0))
+			let entry = coder.decode(from: [String(lastEntry)]).first!
 			
 			XCTAssertEqual(entry.message, message)
 			

@@ -49,38 +49,6 @@ public final class MyFileDelegate: FileDelegate {
 @available(OSX 10.12, iOS 10.0, *)
 extension MyFileDelegate {
 	
-	public func encode(_ entries: [Entry]) -> [Data?] {
-		let group = DispatchGroup()
-		var results = [Data?](repeating: nil, count: entries.count)
-		
-		let queue = DispatchQueue(label: "com.stuff.mystuff.temp-my-example", qos: .userInitiated)
-		
-		for i in entries.indices {
-			group.enter()
-			
-			DispatchQueue.global(qos: .userInitiated).async {
-				
-				// encode each entry concurrently
-				guard let result = entries[i].toCSV().data(using: .utf8) else {
-					preconditionFailure("failed to encode entry at index '\(i)': \(entries[i])")
-				}
-				
-				queue.async {
-					
-					// accessing the array concurrently has been causing
-					// some issues, so we move that interaction onto a
-					// serial queue
-					results[i] = result
-					group.leave()
-				}
-			}
-		}
-		
-		group.wait()
-		
-		return results
-	}
-	
 	public func write(_ entries: [Entry]) {
 		let count = Limit(entries.count)
 		
@@ -91,27 +59,17 @@ extension MyFileDelegate {
 		}
 		
 		let url = filenameProvider.currentFile()
-		let results = encode(entries)
 		
 		do {
-			guard let delimiter = "\n".data(using: .utf8) else {
-				os_log("failed to encode newline character ('\\n') to utf8 encoding. This shouldn't be possible.", log: logger, type: .fault)
-				return
-			}
-			
-			
-			let compact = results.compactMap { $0 }
-			assert(compact.count == results.count, "we must have failed to encode one of the Entries")
-			
-			var data = Data(compact.joined(separator: delimiter))
-			
+			let coder = EntryCoder(version: (0, 0, 0))
+			var data = coder.encode(entries)
 			
 			if currentLineCount == 0 {
 				// TODO: also write some meta-data,
 				// i.e. date, version number
 				// maybe bundle name, userID, and deviceID at the
 				// top of each line and skip writing them on each line
-				data = metaData() + delimiter + data
+				data = metaData() + data
 				try data.write(to: url)
 			} else {
 				

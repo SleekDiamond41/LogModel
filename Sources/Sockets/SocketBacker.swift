@@ -67,14 +67,13 @@ public class Socket {
 			}
 		}
 		
+		let coder = EntryCoder(version: (0, 0, 0))
+		
 		subject
 			.receive(on: queue)
 			.map { $0.makeEntry() }
-			.map { $0.toCSV() }
-			.map { $0.data(using: .utf8)! }
 			.collect(.byTime(DispatchQueue.global(qos: .background), 0.1))
-			.map { $0.joined(separator: "\n".data(using: .utf8)!) }
-			.map { Data($0) }
+			.map { coder.encode($0) }
 			.sink { (completion) in
 				switch completion {
 				case .failure(let error):

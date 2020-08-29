@@ -14,8 +14,8 @@ import Models
 class CSVLogEncoder {
 	
 	func encode(_ entry: Entry) -> Data {
-		return entry.toCSV()
-			.data(using: .utf8)!
+		let coder = EntryCoder(version: (0, 0, 0))
+		return coder.encode([entry])
 	}
 }
 
@@ -42,34 +42,10 @@ class SwiftLogDecoder {
 			let decoder = JSONDecoder()
 			let meta = try decoder.decode(MetaData.self, from: data)
 			
-			let queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.SwiftLogDecoder")
-			let group = DispatchGroup()
+			let coder = EntryCoder(version: (0, 0, 0))
+			let entries = coder.decode(from: splits.map { String($0) })
 			
-			var entries = [Entry?](repeating: nil, count: (splits.count - 1))
-			
-			for i in 1..<splits.count {
-				group.enter()
-				
-				DispatchQueue.global(qos: .userInitiated).async {
-					
-					let entry = Entry(from: String(splits[i]))
-					
-					queue.async {
-						// we started this loop with index 1, we have to subtract 1
-						// when assigning Entries into the `entries` array
-						entries[i - 1] = entry
-						group.leave()
-					}
-				}
-			}
-			
-			group.wait()
-			
-			let results = entries.compactMap { $0 }
-			
-			assert(results.count == entries.count, "we must have failed to decode some entries somewhere")
-			
-			return (meta, results)
+			return (meta, entries)
 		} catch {
 			preconditionFailure(error.localizedDescription)
 		}
