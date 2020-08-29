@@ -10,7 +10,7 @@ import XCTest
 
 import os
 
-@available(OSX 11, iOS 13, *)
+@available(OSX 10.15, iOS 13, *)
 class LogTests: XCTestCase {
 	
 	var log: Log!
@@ -27,17 +27,17 @@ class LogTests: XCTestCase {
 	override func setUp() {
 		print(dir.path)
 		
-		let backer = LogBacker(
-			bundleID: bundleID,
-			userID: nil,
-			deviceID: nil,
-			serverURL: nil,
-			dir: dir)
-		
-		log = Log(
-			bundleID: bundleID,
-			category: .logModelTests,
-			backer: backer)
+//		let backer = LogBacker(
+//			bundleID: bundleID,
+//			userID: nil,
+//			deviceID: nil,
+//			serverURL: nil,
+//			dir: dir)
+//
+//		log = Log(
+//			bundleID: bundleID,
+//			category: .logModelTests,
+//			backer: backer)
 	}
 	
 	override func tearDownWithError() throws {
@@ -69,13 +69,12 @@ class LogTests: XCTestCase {
 	}
 	
 	
-	@available(iOS 14.0, *)
+	@available(OSX 11.0, iOS 14.0, *)
 	func testTime_savingToFile_CSV() {
 		
 		let log = Logger(subsystem: "com.the-duct-ape.Logs.LogTests", category: #function)
 		
 		self.measure {
-			
 			for i in 1...1000 {
 				log.warning("Here is message number \(i)")
 			}

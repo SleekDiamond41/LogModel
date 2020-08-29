@@ -6,12 +6,13 @@
 //
 
 import struct Foundation.UUID
+import struct Models.EntryData
 
 final class Save: Hashable {
 	let id = UUID()
-	let entries: [Entry]
+	let entries: [EntryData]
 	
-	init(_ entries: [Entry]) {
+	init(_ entries: [EntryData]) {
 		self.entries = entries
 	}
 }

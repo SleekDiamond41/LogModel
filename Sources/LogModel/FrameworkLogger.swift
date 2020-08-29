@@ -6,20 +6,21 @@
 //
 
 import Foundation
-
+import Models
+import Protocols
 
 @available(OSX 10.12, iOS 10.0, *)
 final class FrameworkLog: LogBacker {
 	
 	let common: LogBacker?
 	
-	init(bundleID: String, common: LogBacker?, serverURL: URL) {
+	init(bundleID: String, common: LogBacker?, storage: Backer) {
 		self.common = common
 		
 		super.init(bundleID: bundleID,
 				   userID: common?.userID,
 				   deviceID: common?.deviceID,
-				   serverURL: serverURL)
+				   storage: storage)
 	}
 	
 	override func log(_ severity: Severity, _ message: Message, category: String, bundleID: String, customData: String?, file: String, function: String, line: UInt32) {

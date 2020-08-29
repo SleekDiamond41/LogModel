@@ -6,6 +6,15 @@
 //
 
 import Foundation
+import Models
+import Protocols
+import Persistence
+import Sockets
+
+public typealias Message = Models.Message
+//typealias Entry = Models.Entry
+//typealias Severity = Models.Severity
+//typealias Backer = Protocols.Backer
 
 
 @available(OSX 10.12, iOS 10.0, *)
@@ -68,30 +77,31 @@ extension Log {
 	private static var config: Config!
 	
 	public private(set) static var common: Log! = {
+		preconditionFailure()
 		
-		let backer: LogBacker
-		
-		// FIXME: create a robust way to use different Backers based on needs and availability
-		// including SocketBacker... which can feasibly work!
-		
-		if #available(macOS 10.15, iOS 13.0, *) {
-			let storage = SocketBacker()
-			
-			backer = LogBacker(bundleID: config.bundleID,
-								   userID: config.userID,
-								   deviceID: config.deviceID,
-								   storage: storage)
-		} else {
-			backer = LogBacker(bundleID: config.bundleID,
-								   userID: config.userID,
-								   deviceID: config.deviceID,
-								   serverURL: config.serverURL)
-		}
-		
-		
-		return Log(bundleID: config.bundleID,
-				   category: .common,
-				   backer: backer)
+//		let backer: LogBacker
+//
+//		// FIXME: create a robust way to use different Backers based on needs and availability
+//		// including SocketBacker... which can feasibly work!
+//
+//		if #available(macOS 10.15, iOS 13.0, *) {
+//			let storage = SocketBacker()
+//
+//			backer = LogBacker(bundleID: config.bundleID,
+//								   userID: config.userID,
+//								   deviceID: config.deviceID,
+//								   storage: storage)
+//		} else {
+//			backer = LogBacker(bundleID: config.bundleID,
+//								   userID: config.userID,
+//								   deviceID: config.deviceID,
+//								   storage: StandardLocalStorage(forSyncingTo: config.serverURL, maxBufferSize: 10_000))
+//		}
+//
+//
+//		return Log(bundleID: config.bundleID,
+//				   category: .common,
+//				   backer: backer)
 	}()
 	
 	
@@ -101,12 +111,12 @@ extension Log {
 	/// - Parameter bundleID: the identifier of the module bundle, i.e. "com.my-company.helpful-module"
 	/// - Returns: a `Log` instance that reports events to the module creator, and also to the common `Log`.
 	public static func forFramework(bundleID: String, syncingTo url: URL) -> Log {
-		
-		return Log(bundleID: bundleID,
-				   category: .common,
-				   backer: FrameworkLog(bundleID: bundleID,
-										common: Log.common?.backer,
-										serverURL: url))
+		preconditionFailure()
+//		return Log(bundleID: bundleID,
+//				   category: .common,
+//				   backer: FrameworkLog(bundleID: bundleID,
+//										common: Log.common?.backer,
+//										storage: url))
 	}
 }
 

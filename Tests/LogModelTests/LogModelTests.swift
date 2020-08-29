@@ -1,4 +1,6 @@
 import XCTest
+import Sockets
+import Models
 @testable import LogModel
 
 
@@ -26,17 +28,17 @@ final class LogModelTests: XCTestCase {
 		print(dir)
 		print()
 		
-		let backer = LogBacker(
-			bundleID: bundle,
-			userID: nil,
-			deviceID: nil,
-			serverURL: nil,
-			dir: self.dir)
-		
-		log = Log(
-			bundleID: bundle,
-			category: .logModelTests,
-			backer: backer)
+//		let backer = LogBacker(
+//			bundleID: bundle,
+//			userID: nil,
+//			deviceID: nil,
+//			serverURL: nil,
+//			dir: self.dir)
+//
+//		log = Log(
+//			bundleID: bundle,
+//			category: .logModelTests,
+//			backer: backer)
 	}
 	
 	override func tearDownWithError() throws {
@@ -76,10 +78,6 @@ final class LogModelTests: XCTestCase {
 			.appendingPathComponent("Standard")
 			.appendingPathComponent("0")
 		
-		print()
-		print(standard.path)
-		print()
-		
 		XCTAssert(FileManager.default.fileExists(atPath: standard.path))
 	}
 	
@@ -94,14 +92,15 @@ final class LogModelTests: XCTestCase {
 		
 		// don't wait here... the error message should force a write immediately
 		
-		let highPriority = dir
+		let file = dir
 			.appendingPathComponent("HighPriority")
 			.appendingPathComponent("0")
 		
-		XCTAssert(FileManager.default.fileExists(atPath: highPriority.path))
+		XCTAssert(FileManager.default.fileExists(atPath: file.path),
+				  "failed to create file at '\(file)'")
 		
 		do {
-			let data = try Data(contentsOf: highPriority)
+			let data = try Data(contentsOf: file)
 			guard let s = String(data: data, encoding: .utf8) else {
 				XCTFail("failed to convert data back into a String")
 				return

@@ -7,7 +7,7 @@
 
 import struct Foundation.URL
 
-protocol FilenameProviding {
+public protocol FilenameProviding {
 	func currentFile() -> URL
 	mutating func advance()
 }

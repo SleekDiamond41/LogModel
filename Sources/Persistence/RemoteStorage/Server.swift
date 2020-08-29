@@ -7,6 +7,6 @@
 
 import struct Foundation.URL
 
-protocol Server {
+public protocol Server {
 	func accept(_ file: URL, onComplete: @escaping (Bool) -> Void)
 }

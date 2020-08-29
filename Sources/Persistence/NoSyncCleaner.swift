@@ -8,7 +8,7 @@
 import Foundation
 
 @available(OSX 10.12, iOS 10.0, *)
-class NoSyncCleaner: FileCleaner {
+class NoSyncCleaner: Archiver {
 	
 	let maxFileCount = 10
 	
@@ -18,7 +18,7 @@ class NoSyncCleaner: FileCleaner {
 		self.syncList = syncList
 	}
 	
-	func queueCleanup(at url: URL) {
+	func archive(_ url: URL) {
 		// add the item to the list
 		syncList.add(url)
 		

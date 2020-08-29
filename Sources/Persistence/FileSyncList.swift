@@ -8,6 +8,10 @@
 import Foundation
 import OSLog
 
+extension FileManager {
+	static let local = FileManager()
+}
+
 @available(OSX 10.12, iOS 10.0, *)
 class FileSyncList {
 	
@@ -40,7 +44,7 @@ class FileSyncList {
 			let data = try encoder.encode(models)
 			
 			do {
-				try data.write(to: file, options: .atomicWrite)
+				try data.write(to: file, options: [.atomicWrite])
 			} catch {
 				os_log("failed to write Data to URL '%s' with error '%s'",
 					   log: logger,
@@ -53,6 +57,7 @@ class FileSyncList {
 				   log: logger,
 				   type: .fault,
 				   models.description, error.localizedDescription)
+			preconditionFailure()
 		}
 	}
 	

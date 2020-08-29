@@ -7,6 +7,8 @@
 
 import Foundation
 import XCTest
+import Persistence
+import Models
 @testable import LogModel
 
 class CSVLogEncoder {
@@ -94,7 +96,7 @@ class MyFileDelegateTests: XCTestCase {
 								 file: "MyFileDelegateTests",
 								 function: #function,
 								 line: #line,
-								 customData: "",
+								 threadID: 290840,
 								 bundleID: "com.duct-ape-productions.LogModelTests",
 								 userID: nil,
 								 deviceID: nil))
@@ -151,7 +153,7 @@ class MyFileDelegateTests: XCTestCase {
 			
 			let (resultMeta, resultEntries) = try decoder.decode(from: data)
 			
-			XCTAssertEqual(resultMeta, MetaData())
+			XCTAssertEqual(resultMeta, MetaData(0, 0, 0))
 			
 			guard resultEntries.count == entries.count else {
 				XCTFail("there should have been '\(entries.count)' results but there were '\(resultEntries.count)' instead")

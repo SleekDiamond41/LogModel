@@ -6,25 +6,25 @@
 //
 
 import OSLog
+import Models
+
 
 @available(OSX 10.12, iOS 10.0, *)
-final class MyFileDelegate: FileDelegate {
+public final class MyFileDelegate: FileDelegate {
 	
-	typealias Limit = UInt16
+	public typealias Limit = UInt16
 	
 	/// This delegate prefers to keep the number of lines per file below a certain threshold,
 	/// but may write more lines to a single file if sent in a single `write(_:)` call.
 	let preferredMaxLinesPerFile: Limit
 	
-	private let meta = MetaData()
-	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "WritingData")
-	
-	private var currentLineCount: Limit = 0
+	private let meta = MetaData(0, 0, 0)
+	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "Persistence")
 	
 	private var filenameProvider: FilenameProviding
+	private var currentLineCount: Limit = 0
 	
-	
-	init(filename: FilenameProviding, preferredLinesPerFile: Limit = 10_000) {
+	public init(filename: FilenameProviding, preferredLinesPerFile: Limit = 10_000) {
 		self.filenameProvider = filename
 		self.preferredMaxLinesPerFile = preferredLinesPerFile
 	}
@@ -49,8 +49,7 @@ final class MyFileDelegate: FileDelegate {
 @available(OSX 10.12, iOS 10.0, *)
 extension MyFileDelegate {
 	
-	@inlinable
-	func encode(_ entries: [Entry]) -> [Data?] {
+	public func encode(_ entries: [Entry]) -> [Data?] {
 		let group = DispatchGroup()
 		var results = [Data?](repeating: nil, count: entries.count)
 		
@@ -82,7 +81,7 @@ extension MyFileDelegate {
 		return results
 	}
 	
-	func write(_ entries: [Entry]) {
+	public func write(_ entries: [Entry]) {
 		let count = Limit(entries.count)
 		
 		if (count + currentLineCount) > preferredMaxLinesPerFile {

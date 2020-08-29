@@ -8,14 +8,16 @@
 import Foundation
 import Combine
 import Starscream
+import Models
+import Protocols
 
 
 @available(OSX 10.15, iOS 13.0, *)
-class SocketBacker: Backer {
+public class Socket {
 	
 	let connection: WebSocket
 	
-	private enum State {
+	public enum State {
 		case connected
 		case notConnected
 		case connecting
@@ -25,7 +27,7 @@ class SocketBacker: Backer {
 	/// Serial queue, avoid race conditions
 	let queue: DispatchQueue
 	
-	private let subject = PassthroughSubject<Entry, Never>()
+	private let subject = PassthroughSubject<EntryData, Never>()
 	
 	private var tokens = Set<AnyCancellable>()
 	private var state = State.notConnected {
@@ -40,14 +42,13 @@ class SocketBacker: Backer {
 			pendingEntries = []
 		}
 	}
-	private var pendingEntries = [Entry]()
+	private var pendingEntries = [EntryData]()
 	
 	deinit {
 		print("deninit")
 	}
 	
-	init() {
-		let url = URL(string: "ws://65.130.69.120:443")!
+	public init(url: URL) {
 		var request = URLRequest(url: url)
 		request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
 		self.connection = WebSocket(request: request)
@@ -66,11 +67,14 @@ class SocketBacker: Backer {
 			}
 		}
 		
-		let encoder = JSONEncoder()
-		
 		subject
+			.receive(on: queue)
+			.map { $0.makeEntry() }
+			.map { $0.toCSV() }
+			.map { $0.data(using: .utf8)! }
 			.collect(.byTime(DispatchQueue.global(qos: .background), 0.1))
-			.encode(encoder: encoder)
+			.map { $0.joined(separator: "\n".data(using: .utf8)!) }
+			.map { Data($0) }
 			.sink { (completion) in
 				switch completion {
 				case .failure(let error):
@@ -85,12 +89,11 @@ class SocketBacker: Backer {
 	}
 	
 	
-	func log(_ entry: Entry) {
-		print("logging entry")
+	public func log(_ data: EntryData) {
 		
 		switch state {
 		case .connected:
-			subject.send(entry)
+			subject.send(data)
 			
 		case .notConnected:
 			state = .connecting
@@ -99,7 +102,7 @@ class SocketBacker: Backer {
 			
 		case .connecting:
 			// stack up entries until we're connected
-			pendingEntries.append(entry)
+			pendingEntries.append(data)
 		}
 	}
 }

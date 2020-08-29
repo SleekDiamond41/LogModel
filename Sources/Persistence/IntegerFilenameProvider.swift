@@ -12,24 +12,26 @@ import OSLog
 @available(OSX 10.12, iOS 10.0, *)
 final class IntegerFilenameProviding: FilenameProviding {
 	
+	let logger: OSLog
 	let dir: URL
-	let cleaner: FileCleaner
+	let archiver: Archiver
 	let maxFiles: UInt16 = 1_000
 	
 	private var fileIndex: UInt16 = 0
 	
-	private lazy var file = getFile()
+	private var file: URL!
 	
-	init(dir: URL, manager: FileManager, cleaner: FileCleaner) {
+	init(dir: URL, manager: FileManager, cleaner: Archiver) {
 		self.dir = dir
-		self.cleaner = cleaner
+		self.archiver = cleaner
 		
-		let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "PrepareDirectory")
+		self.logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "Persistence")
 		
 		do {
 			try manager.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
 		} catch {
 			os_log("failed to create directory at '%s' with error '%s'", log: logger, type: .fault, dir.absoluteString, error.localizedDescription)
+			preconditionFailure()
 		}
 		
 		do {
@@ -51,6 +53,8 @@ final class IntegerFilenameProviding: FilenameProviding {
 			
 			self.fileIndex = 0
 		}
+		
+		self.file = getFile()
 	}
 	
 	fileprivate func getFile() -> URL {
@@ -69,7 +73,14 @@ extension IntegerFilenameProviding {
 	
 	func advance() {
 		// get the URL while it's still valid
-		let oldFile = file
+		guard let oldFile = file else {
+			os_log("programmer error: property `file` should never be nil after initialization", log: logger, type: .fault)
+			preconditionFailure("")
+		}
+		
+		defer {
+			archiver.archive(oldFile)
+		}
 		
 		// increment count
 		fileIndex += 1
@@ -81,8 +92,5 @@ extension IntegerFilenameProviding {
 		
 		// update the state
 		file = getFile()
-		
-		// register file for cleanup
-		cleaner.queueCleanup(at: oldFile)
 	}
 }

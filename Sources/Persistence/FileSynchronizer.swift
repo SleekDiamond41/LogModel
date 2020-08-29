@@ -8,7 +8,7 @@
 import Foundation
 
 @available(OSX 10.12, iOS 10.0, *)
-class FileSynchronizer: FileCleaner {
+class FileSynchronizer: Archiver {
 	
 	let syncList: FileSyncList
 	let server: Server
@@ -30,10 +30,9 @@ class FileSynchronizer: FileCleaner {
 			return
 		}
 		
-		server.accept(file) { [weak self] (successful) in
-			// weak self shouldn't really be necessary,
-			// but it's a good practice to be in
-			guard let self = self else { return }
+		server.accept(file) { (successful) in
+			// strong self because we want to make sure
+			// we update the SyncList no matter what
 			
 			self.pendingFiles.remove(file)
 			
@@ -44,11 +43,11 @@ class FileSynchronizer: FileCleaner {
 	}
 }
 
-// MARK: - FileCleaner Conformance
+// MARK: - Archiver Conformance
 @available(OSX 10.12, iOS 10.0, *)
 extension FileSynchronizer {
 	
-	func queueCleanup(at url: URL) {
+	func archive(_ url: URL) {
 		self.queue.async {
 			self.syncList.add(url)
 			
