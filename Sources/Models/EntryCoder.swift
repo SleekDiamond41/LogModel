@@ -20,23 +20,25 @@ public class EntryCoder {
 	
 	
 	func encode(_ entry: Entry) -> Data {
-		let text = [
-			"\(entry.id ?? 0)",
-			"\(entry.date.timeIntervalSinceReferenceDate)",
-			"\(entry.severity.rawValue)",
+		let parts: [String] = [
+			entry.id.map { String($0) } ?? "",
+			String(entry.date.timeIntervalSinceReferenceDate),
+			String(entry.severity.rawValue),
 			entry.message,
 			entry.category,
 			entry.directory,
 			entry.file,
 			entry.function,
-			"\(entry.line)",
-			"\(entry.threadID)",
-			entry.bundleID,
-			(entry.userID?.uuidString ?? ""),
+			String(entry.line),
+			String(entry.threadID),
+			entry.appID,
+			entry.frameworkID ?? "",
+			entry.userID?.uuidString ?? "",
 			(entry.deviceID?.uuidString ?? ""),
 		]
-		.map { $0.isEmpty ? " " : $0 }
-		.joined(separator: "\(columnDelimiter)")
+		let text = parts
+			.map { $0.toCSV() }
+			.joined(separator: "\(columnDelimiter)")
 		
 		guard let data = text.data(using: .utf8) else {
 			preconditionFailure("failed to encode text")
@@ -86,25 +88,39 @@ public class EntryCoder {
 	
 	func decodeOne(from text: String) -> Entry {
 		
-		let splits = text.split(separator: columnDelimiter)
+		let splits = text
+			.split(separator: columnDelimiter)
+			.map { String($0).fromCSV() }
 		
 		guard let severity = Severity(rawValue: UInt8(splits[2])!) else {
 			preconditionFailure()
 		}
+		guard let dateTime = TimeInterval(splits[1]) else {
+			preconditionFailure()
+		}
+		guard let line = UInt32(splits[8]) else {
+			preconditionFailure()
+		}
+		guard let threadID = Int(splits[9]) else {
+			preconditionFailure()
+		}
+		
+		let frameworkID = splits[11]
 		
 		return Entry(id: UInt64(splits[0]),
-					 date: Date(timeIntervalSinceReferenceDate: TimeInterval(splits[1])!),
+					 date: Date(timeIntervalSinceReferenceDate: dateTime),
 					 severity: severity,
-					 message: String(splits[3]),
-					 category: String(splits[4]),
-					 directory: String(splits[5]),
-					 file: String(splits[6]),
-					 function: String(splits[7]),
-					 line: UInt32(splits[8])!,
-					 threadID: Int(splits[9])!,
-					 bundleID: String(splits[10]),
-					 userID: UUID(uuidString: String(splits[11])),
-					 deviceID: UUID(uuidString: String(splits[12])))
+					 message: splits[3],
+					 category: splits[4],
+					 directory: splits[5],
+					 file: splits[6],
+					 function: splits[7],
+					 line: line,
+					 threadID: threadID,
+					 appID: splits[10],
+					 frameworkID: !frameworkID.isEmpty ? frameworkID : nil,
+					 userID: UUID(uuidString: String(splits[12])),
+					 deviceID: UUID(uuidString: String(splits[13])))
 	}
 	
 	public func decode(from splits: [String]) -> [Entry] {
@@ -147,3 +163,20 @@ public class EntryCoder {
 
 let rowDelimiter: Character = "🚷"
 let columnDelimiter: Character = "❗️"
+let emptyStringReplacement: String = "🔱"
+
+extension String {
+	func toCSV() -> String {
+		if self.isEmpty {
+			return emptyStringReplacement
+		}
+		return self
+	}
+	
+	func fromCSV() -> String {
+		if self == emptyStringReplacement {
+			return ""
+		}
+		return self
+	}
+}

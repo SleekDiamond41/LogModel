@@ -60,25 +60,22 @@ class MyFileDelegateTests: XCTestCase {
 		.appendingPathComponent("MyFileDelegateTests")
 	
 	let entries: [Entry] = {
-		var entries = [Entry]()
-		
-		for i in 1...10 {
-			entries.append(Entry(id: nil,
-								 date: Date(),
-								 severity: .info,
-								 message: "entry number \(i)",
-								 category: "MyFileDelegateTests",
-								 directory: "LogModelTests",
-								 file: "MyFileDelegateTests",
-								 function: #function,
-								 line: #line,
-								 threadID: 290840,
-								 bundleID: "com.duct-ape-productions.LogModelTests",
-								 userID: nil,
-								 deviceID: nil))
+		return (1...10).map { i in
+			Entry(id: i,
+				  date: Date(),
+				  severity: .info,
+				  message: "a fance entry with lots of meaningful data, this should be very helpful",
+				  category: "MyFileDelegateTests",
+				  directory: "LogModelTests",
+				  file: "MyFileDelegateTests",
+				  function: #function,
+				  line: #line,
+				  threadID: 290840,
+				  appID: "com.duct-ape-productions.LogModelTests",
+				  frameworkID: nil,
+				  userID: nil,
+				  deviceID: nil)
 		}
-		
-		return entries
 	}()
 	
 	override func setUp() {

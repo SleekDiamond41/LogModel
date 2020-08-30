@@ -72,7 +72,8 @@ public class Entry: Codable, CustomStringConvertible {
 	public let function: String
 	public let line: UInt32
 	public let threadID: Int
-	public let bundleID: String
+	public let appID: String
+	public let frameworkID: String?
 	public let userID: UUID?
 	public let deviceID: UUID?
 	
@@ -92,7 +93,8 @@ public class Entry: Codable, CustomStringConvertible {
 		 function: String,
 		 line: UInt32,
 		 threadID: Int,
-		 bundleID: String,
+		 appID: String,
+		 frameworkID: String?,
 		 userID: UUID?,
 		 deviceID: UUID?
 	) {
@@ -107,7 +109,8 @@ public class Entry: Codable, CustomStringConvertible {
 		self.function = function
 		self.line = line
 		self.threadID = threadID
-		self.bundleID = bundleID
+		self.appID = appID
+		self.frameworkID = frameworkID
 		self.userID = userID
 		self.deviceID = deviceID
 	}
@@ -125,7 +128,8 @@ public class Entry: Codable, CustomStringConvertible {
 		self.function = try container.decode(String.self, forKey: .function)
 		self.line = try container.decode(UInt32.self, forKey: .line)
 		self.threadID = try container.decode(Int.self, forKey: .threadID)
-		self.bundleID = try container.decode(String.self, forKey: .bundleID)
+		self.appID = try container.decode(String.self, forKey: .appID)
+		self.frameworkID = try container.decodeIfPresent(String.self, forKey: .frameworkID)
 		self.userID = try container.decodeIfPresent(UUID.self, forKey: .userID)
 		self.deviceID = try container.decodeIfPresent(UUID.self, forKey: .deviceID)
 	}
@@ -144,7 +148,8 @@ public class Entry: Codable, CustomStringConvertible {
 		try container.encode(function, forKey: .function)
 		try container.encode(line, forKey: .line)
 		try container.encode(threadID, forKey: .threadID)
-		try container.encode(bundleID, forKey: .bundleID)
+		try container.encode(appID, forKey: .appID)
+		try container.encodeIfPresent(frameworkID, forKey: .frameworkID)
 		try container.encodeIfPresent(userID, forKey: .userID)
 		try container.encodeIfPresent(deviceID, forKey: .deviceID)
 	}
@@ -164,7 +169,8 @@ public class Entry: Codable, CustomStringConvertible {
 		// maybe one for build number
 		// can I rip that info from Info.plist?
 		case threadID = "thread_id"
-		case bundleID = "bundle_id"
+		case appID = "app_id"
+		case frameworkID = "framework_id"
 		case userID = "user_id"
 		case deviceID = "device_id"
 	}

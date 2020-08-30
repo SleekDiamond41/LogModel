@@ -17,14 +17,15 @@ class EntryTests: XCTestCase {
 			Entry(id: $0,
 				  date: Date(),
 				  severity: .info,
-				  message: "Hello, 'Bob'",
+				  message: "Hello, 'Bob', \($0)",
 				  category: "Testing",
 				  directory: "LogModelTests",
 				  file: "EntryTests",
 				  function: "myFunction()",
 				  line: #line,
 				  threadID: 23849,
-				  bundleID: "com.duct-ape-productions.app-name",
+				  appID: "com.duct-ape-productions.app-name",
+				  frameworkID: nil,
 				  userID: UUID(),
 				  deviceID: nil)
 		}
@@ -42,11 +43,13 @@ class EntryTests: XCTestCase {
 		XCTAssertEqual(result.severity, entry.severity)
 		XCTAssertEqual(result.message, entry.message)
 		XCTAssertEqual(result.category, entry.category)
+		XCTAssertEqual(result.directory, entry.directory)
 		XCTAssertEqual(result.file, entry.file)
 		XCTAssertEqual(result.function, entry.function)
 		XCTAssertEqual(result.line, entry.line)
 		XCTAssertEqual(result.threadID, entry.threadID)
-		XCTAssertEqual(result.bundleID, entry.bundleID)
+		XCTAssertEqual(result.appID, entry.appID)
+		XCTAssertEqual(result.frameworkID, entry.frameworkID)
 		XCTAssertEqual(result.userID, entry.userID)
 		XCTAssertEqual(result.deviceID, entry.deviceID)
 	}
