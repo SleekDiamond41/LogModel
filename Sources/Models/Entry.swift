@@ -42,21 +42,33 @@ public struct EntryData {
 		self.frameworkID = frameworkID
 	}
 	
+	func directoryFile(_ s: String) -> (String, String) {
+		let splits = s.split(separator: "/")
+		
+		if splits.count > 1 {
+			return (String(splits[splits.count-2]), String(splits[splits.count-1]))
+		}
+		return ("N/A", String(splits[0]))
+	}
+	
 	public func makeEntry() -> Entry {
-		preconditionFailure()
-//		return Entry(id: nil,
-//					 date: date,
-//					 severity: severity,
-//					 message: message.string(for: .low),
-//					 category: category,
-//					 directory: <#T##String#>,
-//					 file: <#T##String#>,
-//					 function: <#T##String#>,
-//					 line: <#T##UInt32#>,
-//					 threadID: <#T##Int#>,
-//					 bundleID: <#T##String#>,
-//					 userID: <#T##UUID?#>,
-//					 deviceID: <#T##UUID?#>)
+		
+		let (directory, file) = directoryFile(filepath)
+		
+		return Entry(id: nil,
+					 date: date,
+					 severity: severity,
+					 message: message.string(for: .low),
+					 category: category,
+					 directory: directory,
+					 file: file,
+					 function: function,
+					 line: line,
+					 threadID: threadID,
+					 appID: appID,
+					 frameworkID: frameworkID,
+					 userID: nil,
+					 deviceID: nil)
 	}
 }
 

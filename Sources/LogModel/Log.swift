@@ -60,11 +60,11 @@ extension Log {
 	
 	public struct Config {
 		let bundleID: String
-		let serverURL: URL
+		let serverURL: URL?
 		let userID: UUID?
 		let deviceID: UUID?
 		
-		public init(bundleID: String, userID: UUID?, deviceID: UUID?, serverURL: URL) {
+		public init(bundleID: String, userID: UUID?, deviceID: UUID?, serverURL: URL?) {
 			self.bundleID = bundleID
 			self.userID = userID
 			self.deviceID = deviceID
