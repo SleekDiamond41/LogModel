@@ -74,7 +74,8 @@ extension Log {
 	
 	public static func configureCommon(_ config: Config) {
 		guard self.config == nil else {
-			preconditionFailure("this method may be called exactly once")
+//			preconditionFailure("this method may be called exactly once")
+			return
 		}
 		
 		self.config = config
