@@ -104,6 +104,31 @@ extension Message.StringInterpolation {
 	}
 }
 
+extension Message.StringInterpolation {
+	
+	public mutating func appendInterpolation(_ value: Bool, privacy: Message.PrivacyMethod = .private) {
+		
+		parts.append({ (privacySetting) in
+			
+			let text = value ? "true" : "false"
+			
+			switch privacySetting {
+			case .low:
+				return "'\(text)'"
+			case .high:
+				switch privacy {
+				case .public:
+					return "'\(text)'"
+				case .hashed:
+					return "'" + text.sha256() + "'"
+				case .private:
+					return "'" + text.replacingOccurrences(of: "[a-z]", with: "*", options: [.regularExpression, .caseInsensitive]) + "'"
+				}
+			}
+		})
+	}
+}
+
 
 // MARK: - Strings
 extension Message.StringInterpolation {
