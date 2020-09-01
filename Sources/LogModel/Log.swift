@@ -6,10 +6,16 @@
 //
 
 import Foundation
+import Backers
 import Models
 import Protocols
 import Persistence
 import Sockets
+
+
+extension FileManager {
+	static let local = FileManager()
+}
 
 public typealias Message = Models.Message
 //typealias Entry = Models.Entry
@@ -22,9 +28,9 @@ public struct Log {
 	
 	let bundleID: String
 	let category: Category
-	let backer: LogBacker
+	let backer: Backer
 	
-	init(bundleID: String, category: Category, backer: LogBacker) {
+	init(bundleID: String, category: Category, backer: Backer) {
 		self.bundleID = bundleID
 		self.category = category
 		self.backer = backer
@@ -76,11 +82,24 @@ extension Log {
 	
 	private static var config: Config!
 	
-	public private(set) static var common: Log! = {
-		preconditionFailure()
+	internal static var shared: Log! = {
+		
+		let backer = Console()
+		
+		return Log(bundleID: config.bundleID,
+				   category: Category("Common"),
+				   backer: backer)
+	}()
+	
+	public private(set) static var common: Log = {
+		guard let source = shared else {
+			preconditionFailure("please configure data with 'configureCommon(_:)' before logging any statements")
+		}
+		
+		return source
 		
 //		let backer: LogBacker
-//
+//s
 //		// FIXME: create a robust way to use different Backers based on needs and availability
 //		// including SocketBacker... which can feasibly work!
 //
@@ -128,63 +147,94 @@ extension Log {
 	
 	/// Extra information that might be useful to have, such as entering or exiting low-level functions.
 	public func verbose(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.verbose,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .verbose,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 	
 	
 	/// Debugging information. These messages should ideally describe exactly what happened that was incorrect, possible reasons this state may have been entered, and possible solutions to implement that might fix this failure.
 	public func debug(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.debug,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .debug,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 	
 	/// General information, such as user interactions
 	public func info(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.info,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .info,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 	
 	/// Entered an unfortunate, but recoverable state.
 	public func warning(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.warning,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .warning,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 	
 	/// Entered an unrecoverable state.
 	public func error(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.error,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .error,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 	
 	/// The program entered a state that should not be possible.
@@ -197,13 +247,19 @@ extension Log {
 	///         preconditionFailure()
 	///     }
 	public func wtf(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		backer.log(.wtf,
-				   message,
-				   category: category.name,
-				   bundleID: bundleID,
-				   customData: customData,
-				   file: file,
-				   function: function,
-				   line: line)
+		let threadID = Thread.current.hashValue
+		
+		let data = EntryData(date: Date(),
+							 severity: .wtf,
+							 message: message,
+							 category: category.name,
+							 appID: bundleID,
+							 threadID: threadID,
+							 filepath: file,
+							 function: function,
+							 line: line,
+							 frameworkID: nil)
+		
+		backer.log(data)
 	}
 }

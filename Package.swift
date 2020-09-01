@@ -7,15 +7,12 @@ let package = Package(
     name: "LogModel",
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-		.library(
-			name: "FrameworkLog",
-			targets: ["FrameworkLog"]),
         .library(
             name: "LogModel",
             targets: ["LogModel"]),
-		.library(
-			name: "Models",
-			targets: ["Models"]),
+//		.library(
+//			name: "Models",
+//			targets: ["Models"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -35,16 +32,13 @@ let package = Package(
 				dependencies: [
 					"Protocols",
 				]),
-		.target(name: "FrameworkLog",
-				dependencies: [
-					"Models",
-				]),
 		.target(name: "LogModel",
 				dependencies: [
+					"Backers",
 					"Models",
+					"Persistence",
 					"Protocols",
 					"Sockets",
-					"Persistence",
 				]),
 		.target(name: "Models",
 				dependencies: [

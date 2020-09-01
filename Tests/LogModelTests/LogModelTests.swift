@@ -101,15 +101,16 @@ final class LogModelTests: XCTestCase {
 		
 		do {
 			let data = try Data(contentsOf: file)
+			
 			guard let s = String(data: data, encoding: .utf8) else {
 				XCTFail("failed to convert data back into a String")
 				return
 			}
-			
 			guard let lastNewLineIndex = s.lastIndex(of: "\n") else {
 				XCTFail("failed to find a '\n' character in the string '\(s)'")
 				return
 			}
+			
 			let lastEntry = s.suffix(from: s.index(after: lastNewLineIndex))
 			
 			let coder = EntryCoder(version: (0, 0, 0))

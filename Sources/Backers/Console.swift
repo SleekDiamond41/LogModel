@@ -15,6 +15,10 @@ public class Console: Backer {
 	public init() { }
 	
 	public func log(_ data: EntryData) {
-		print()
+		let formatter = DateFormatter()
+		formatter.dateFormat = "MM-dd-yyyy hh:mm:ss.SSS"
+		let dateString = formatter.string(from: data.date)
+		
+		print(dateString, data.appID, data.category, data.makeEntry().message)
 	}
 }
