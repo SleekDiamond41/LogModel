@@ -6,14 +6,8 @@
 //
 
 import Foundation
-#if !targetEnvironment(simulator)
-import OSLog
-#endif
 
 class DebugReporter {
-	#if !targetEnvironment(simulator)
-	private lazy var logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: category)
-	#endif
 	
 	let category: String
 	
@@ -23,18 +17,8 @@ class DebugReporter {
 	
 	
 	func log(_ message: StaticString, _ args: CVarArg...) {
-		#if targetEnvironment(simulator)
 		
 		print(category, String(format: message.description, args))
-		
-		#else
-		
-		os_log(message,
-			   log: self.logger,
-			   type: .fault,
-			   args)
-		
-		#endif
 	}
 }
 
