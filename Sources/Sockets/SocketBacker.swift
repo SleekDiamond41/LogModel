@@ -74,16 +74,16 @@ public class Socket {
 			.map { $0.makeEntry() }
 			.collect(.byTime(DispatchQueue.global(qos: .background), 0.1))
 			.map { coder.encode($0) }
-			.sink { (completion) in
+			.sink(receiveCompletion: { (completion) in
 				switch completion {
 				case .failure(let error):
 					assertionFailure(String(describing: error))
 				case .finished:
 					print("done")
 				}
-			} receiveValue: { [connection] (data) in
+			}, receiveValue: { [connection] (data) in
 				connection.write(data: data)
-			}
+			})
 			.store(in: &tokens)
 	}
 	
