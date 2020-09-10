@@ -25,7 +25,7 @@ class DebugReporter {
 	func log(_ message: StaticString, _ args: CVarArg...) {
 		#if targetEnvironment(simulator)
 		
-		print(category, String(format: message, args))
+		print(category, String(format: message.description, args))
 		
 		#else
 		
