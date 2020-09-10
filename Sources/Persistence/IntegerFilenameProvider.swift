@@ -5,14 +5,13 @@
 //  Created by Michael Arrington on 8/22/20.
 //
 
-import struct Foundation.URL
-import OSLog
+import Foundation
 
 
 @available(OSX 10.12, iOS 10.0, *)
 final class IntegerFilenameProviding: FilenameProviding {
 	
-	let logger: OSLog
+	let logger = DebugReporter(category: "Persistence")
 	let dir: URL
 	let archiver: Archiver
 	let maxFiles: UInt16 = 1_000
@@ -25,12 +24,10 @@ final class IntegerFilenameProviding: FilenameProviding {
 		self.dir = dir
 		self.archiver = cleaner
 		
-		self.logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "Persistence")
-		
 		do {
 			try manager.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
 		} catch {
-			os_log("failed to create directory at '%s' with error '%s'", log: logger, type: .fault, dir.absoluteString, error.localizedDescription)
+			logger.log("failed to create directory at '%s' with error '%s'", dir.absoluteString, error.localizedDescription)
 			preconditionFailure()
 		}
 		
@@ -49,7 +46,7 @@ final class IntegerFilenameProviding: FilenameProviding {
 				self.fileIndex = 0
 			}
 		} catch {
-			os_log("failed to read contents of directory '%s' with error '%s'", log: logger, type: .fault, dir.absoluteString, error.localizedDescription)
+			logger.log("failed to read contents of directory '%s' with error '%s'", dir.absoluteString, error.localizedDescription)
 			
 			self.fileIndex = 0
 		}
@@ -74,7 +71,7 @@ extension IntegerFilenameProviding {
 	func advance() {
 		// get the URL while it's still valid
 		guard let oldFile = file else {
-			os_log("programmer error: property `file` should never be nil after initialization", log: logger, type: .fault)
+			logger.log("programmer error: property `file` should never be nil after initialization")
 			preconditionFailure("")
 		}
 		

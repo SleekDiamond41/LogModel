@@ -1,19 +1,49 @@
 //
 //  MyServer.swift
-//  
+//
 //
 //  Created by Michael Arrington on 8/22/20.
 //
 
 import Foundation
+#if !targetEnvironment(simulator)
 import OSLog
+#endif
+
+class DebugReporter {
+	#if !targetEnvironment(simulator)
+	private lazy var logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: category)
+	#endif
+	
+	let category: String
+	
+	init(category: String) {
+		self.category = category
+	}
+	
+	
+	func log(_ message: StaticString, _ args: CVarArg...) {
+		#if targetEnvironment(simulator)
+		
+		print(category, String(format: message, args))
+		
+		#else
+		
+		os_log(message,
+			   log: self.logger,
+			   type: .fault,
+			   args)
+		
+		#endif
+	}
+}
 
 @available(OSX 10.12, iOS 10.0, *)
 class MyServer: Server {
 	private let url: URL
 	private let session: URLSession
 	
-	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "MyServer")
+	private let logger = DebugReporter(category: "MyServer")
 	
 	init(url: URL, session: URLSession) {
 		self.url = url
@@ -52,10 +82,7 @@ extension MyServer {
 					onComplete(true)
 					
 				} catch {
-					os_log("failed to sync file at URL '%s' to server at '%s' with error '%s'",
-						   log: self.logger,
-						   type: .fault,
-						   file.absoluteString, self.url.absoluteString, error.localizedDescription)
+					self.logger.log("failed to sync file at URL '%s' to server at '%s' with error '%s'", file.absoluteString, self.url.absoluteString, error.localizedDescription)
 					
 					onComplete(false)
 				}
@@ -63,10 +90,7 @@ extension MyServer {
 			}.resume()
 			
 		} catch {
-			os_log("failed to get data from file at URL '%s' with error '%s'",
-				   log: logger,
-				   type: .fault,
-				   file.absoluteString, error.localizedDescription)
+			logger.log("failed to get data from file at URL '%s' with error '%s'", file.absoluteString, error.localizedDescription)
 		}
 	}
 }

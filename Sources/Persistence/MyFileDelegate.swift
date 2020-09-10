@@ -5,7 +5,7 @@
 //  Created by Michael Arrington on 8/22/20.
 //
 
-import OSLog
+import Foundation
 import Models
 
 
@@ -19,7 +19,7 @@ public final class MyFileDelegate: FileDelegate {
 	let preferredMaxLinesPerFile: Limit
 	
 	private let meta = MetaData(0, 0, 0)
-	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "Persistence")
+	private let logger = DebugReporter(category: "Persistence")
 	
 	private var filenameProvider: FilenameProviding
 	private var currentLineCount: Limit = 0
@@ -35,10 +35,7 @@ public final class MyFileDelegate: FileDelegate {
 		do {
 			return try encoder.encode(meta)
 		} catch {
-			os_log("failed to encode MetaData '%s' to JSON with message '%s'",
-				   log: logger,
-				   type: .fault,
-				   String(describing: meta), error.localizedDescription)
+			logger.log("failed to encode MetaData '%s' to JSON with message '%s'", String(describing: meta), error.localizedDescription)
 			
 			preconditionFailure()
 		}
@@ -82,7 +79,7 @@ extension MyFileDelegate {
 			currentLineCount += count
 			
 		} catch {
-			os_log("failed to save %d entries to file at '%s' with message '%s'", log: logger, type: .fault, entries.count, url.absoluteString, error.localizedDescription)
+			logger.log("failed to save %d entries to file at '%s' with message '%s'", entries.count, url.absoluteString, error.localizedDescription)
 		}
 	}
 }

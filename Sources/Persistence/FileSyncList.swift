@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 
 extension FileManager {
 	static let local = FileManager()
@@ -22,7 +21,7 @@ class FileSyncList {
 	let maxBatchSize = 5
 	
 	private let file: URL
-	private let logger = OSLog(subsystem: "com.duct-ape-productions.LogModel", category: "FileSyncList")
+	private let logger = DebugReporter(category: "FileSyncList")
 	
 	private var models = [Model]()
 	
@@ -46,17 +45,11 @@ class FileSyncList {
 			do {
 				try data.write(to: file, options: [.atomicWrite])
 			} catch {
-				os_log("failed to write Data to URL '%s' with error '%s'",
-					   log: logger,
-					   type: .error,
-					   file.absoluteString, error.localizedDescription)
+				logger.log("failed to write Data to URL with error", file.absoluteString, error.localizedDescription)
 			}
 		} catch {
 			
-			os_log("failed to encode '%s' to Data with error '%s'",
-				   log: logger,
-				   type: .fault,
-				   models.description, error.localizedDescription)
+			logger.log("failed to encode '%s' to Data with error '%s'", models.description, error.localizedDescription)
 			preconditionFailure()
 		}
 	}
@@ -72,10 +65,7 @@ class FileSyncList {
 			} catch {
 				let dataString = String(data: data, encoding: .utf8) ?? ""
 				
-				os_log("failed to decode data '%s' to [Model] with error '%s'",
-					   log: logger,
-					   type: .fault,
-					   dataString, error.localizedDescription)
+				logger.log("failed to decode data '%s' to [Model] with error '%s'", dataString, error.localizedDescription)
 			}
 		} catch let error as NSError {
 			models = []
@@ -85,10 +75,7 @@ class FileSyncList {
 				return
 			}
 			
-			os_log("failed to get data from URL '%s' with error '%s'",
-				   log: logger,
-				   type: .error,
-				   file.absoluteString, error.localizedDescription)
+			logger.log("failed to get data from URL '%s' with error '%s'", file.absoluteString, error.localizedDescription)
 		}
 	}
 	
@@ -108,10 +95,7 @@ class FileSyncList {
 		do {
 			try FileManager.local.removeItem(at: file)
 		} catch {
-			os_log("failed to remove file at URL '%s' with error '%s'",
-				   log: logger,
-				   type: .error,
-				   file.absoluteString, error.localizedDescription)
+			logger.log("failed to remove file at URL '%s' with error '%s'", file.absoluteString, error.localizedDescription)
 		}
 		
 		models.removeAll { $0.url == file }
