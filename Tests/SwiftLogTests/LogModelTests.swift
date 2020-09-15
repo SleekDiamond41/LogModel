@@ -108,7 +108,7 @@ final class SwiftLogTests: XCTestCase {
 			let lastEntry = s.suffix(from: s.index(after: lastNewLineIndex))
 			
 			let coder = EntryCoder(version: (0, 0, 0))
-			let entry = coder.decode(from: [String(lastEntry)]).first!
+			let entry = coder.decode(from: [String(lastEntry)]).1.first!
 			
 			XCTAssertEqual(entry.message, message)
 			

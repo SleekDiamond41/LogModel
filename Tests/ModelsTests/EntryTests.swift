@@ -34,9 +34,9 @@ class EntryTests: XCTestCase {
 	
 	func testCSV() {
 		let entry = entries[0]
-		let csv = coder.encode(entry)
+		let csv: String = coder.encode(entry)
 		
-		let result = coder.decode(from: String(data: csv, encoding: .utf8)!)
+		let result = coder.decode(from: csv)
 		
 		XCTAssertEqual(result.id, entry.id)
 		XCTAssertLessThan(abs(result.date.distance(to: entry.date)), 0.00001)
@@ -67,17 +67,18 @@ class EntryTests: XCTestCase {
 	
 	func testDecode() {
 		let listCoder = EntryCoder(coder)
-		let data = entries
-			.map { coder.encode($0) }
-			.map { String(data: $0, encoding: .utf8)! }
+		let data = listCoder.encode(entries)
 		
+//		let data = entries
+//			.map { coder.encode($0) }
+//			.map { String(data: $0, encoding: .utf8)! }
 		
-		var results = [Entry]()
+		var results = (Optional<MetaData>(nil), [Entry]())
 		
 		self.measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
 			results = listCoder.decode(from: data)
 		}
 		
-		print(results.count)
+		print(results.1.count)
 	}
 }

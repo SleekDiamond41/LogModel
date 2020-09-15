@@ -8,12 +8,13 @@
 import Foundation
 
 
-struct EntryCoder_0_0_0: EntryCoderBacker {
-	let rowDelimiter: Data = "🚷".data(using: .utf8)!
+class EntryCoder_0_0_0: EntryCoderBacker {
 	let columnDelimiter: Character = "❗️"
+	let rowDelimiterCharacter: Character = "🚷"
+	lazy var rowDelimiter: Data = String(rowDelimiterCharacter).data(using: .utf8)!
 	let emptyStringReplacement: String = "🔱"
 	
-	func encode(_ entry: Entry) -> Data {
+	func encode(_ entry: Entry) -> String {
 		let parts: [String] = [
 			entry.id.map { String($0) } ?? "",
 			String(entry.date.timeIntervalSinceReferenceDate),
@@ -29,12 +30,14 @@ struct EntryCoder_0_0_0: EntryCoderBacker {
 			entry.userID?.uuidString ?? "",
 			(entry.deviceID?.uuidString ?? ""),
 		]
-		let text = parts
-			// add the delimiter in front of every line
-			// so we have separators between multiple batches, as we as between
-			// MetaData and Entries
+		
+		return parts
 			.map { String(columnDelimiter) + toCSV($0) }
 			.joined()
+	}
+	
+	func encode(_ entry: Entry) -> Data {
+		let text: String = encode(entry)
 		
 		guard let data = text.data(using: .utf8) else {
 			preconditionFailure("failed to encode text")
