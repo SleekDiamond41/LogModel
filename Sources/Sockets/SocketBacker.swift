@@ -55,7 +55,7 @@ public class Socket {
 		self.connection = WebSocket(request: request)
 		self.connection.connect()
 		
-		queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.SocketBacker.workerQueue", qos: .userInitiated, target: .global(qos: .background))
+		queue = DispatchQueue(label: "com.duct-ape-productions.SwiftLog.SocketBacker.workerQueue", qos: .userInitiated, target: .global(qos: .background))
 		
 		connection.onEvent = { event in
 			switch event {

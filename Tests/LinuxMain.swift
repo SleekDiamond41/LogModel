@@ -1,7 +1,7 @@
 import XCTest
 
-import LogModelTests
+import SwiftLogTests
 
 var tests = [XCTestCaseEntry]()
-tests += LogModelTests.allTests()
+tests += SwiftLogTests.allTests()
 XCTMain(tests)

@@ -21,7 +21,7 @@ class EntryTests: XCTestCase {
 				  severity: .info,
 				  message: "Hello, 'Bob', \($0)",
 				  category: "Testing",
-				  directory: "LogModelTests",
+				  directory: "SwiftLogTests",
 				  file: "EntryTests",
 				  function: "myFunction()",
 				  line: #line,

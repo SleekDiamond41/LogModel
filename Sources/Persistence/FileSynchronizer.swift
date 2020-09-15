@@ -20,7 +20,7 @@ class FileSynchronizer: Archiver {
 		self.syncList = syncList
 		self.server	= server
 		
-		self.queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.FileSynchronizer.BackgroundUpdateQueue", qos: .background, target: .global(qos: .background))
+		self.queue = DispatchQueue(label: "com.duct-ape-productions.SwiftLog.FileSynchronizer.BackgroundUpdateQueue", qos: .background, target: .global(qos: .background))
 	}
 	
 	private func send(file: URL) {

@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "LogModel",
+    name: "SwiftLog",
 	platforms: [
 		.macOS(.v10_12),
 		.iOS(.v13),
@@ -12,8 +12,8 @@ let package = Package(
 	products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "LogModel",
-            targets: ["LogModel"]),
+            name: "SwiftLog",
+            targets: ["SwiftLog"]),
 		.library(
 			name: "Models",
 			targets: ["Models"]),
@@ -36,7 +36,7 @@ let package = Package(
 				dependencies: [
 					"Protocols",
 				]),
-		.target(name: "LogModel",
+		.target(name: "SwiftLog",
 				dependencies: [
 					"Backers",
 					"Models",
@@ -60,9 +60,9 @@ let package = Package(
 					.product(name: "Starscream", package: "Starscream"),
 				]),
 		
-		.testTarget(name: "LogModelTests",
+		.testTarget(name: "SwiftLogTests",
 					dependencies: [
-						"LogModel",
+						"SwiftLog",
 						"Persistence",
 						"Protocols",
 						"Sockets",

@@ -7,7 +7,7 @@
 
 import XCTest
 import Backers
-@testable import LogModel
+@testable import SwiftLog
 
 import os
 
@@ -16,7 +16,7 @@ class LogTests: XCTestCase {
 	
 	var log: Log!
 	
-	let bundleID = "com.duct-ape-productions.LogModel"
+	let bundleID = "com.duct-ape-productions.SwiftLog"
 	lazy var dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
 		.first!
 		.appendingPathComponent("Testing")
@@ -32,7 +32,7 @@ class LogTests: XCTestCase {
 
 //		log = Log(
 //			bundleID: bundleID,
-//			category: .logModelTests,
+//			category: .SwiftLogTests,
 //			backer: backer)
 	}
 	

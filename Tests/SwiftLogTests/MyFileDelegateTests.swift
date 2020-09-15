@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 import Persistence
 import Models
-@testable import LogModel
+@testable import SwiftLog
 
 class CSVLogEncoder {
 	
@@ -58,7 +58,7 @@ class MyFileDelegateTests: XCTestCase {
 	
 	let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
 		.first!
-		.appendingPathComponent("com.duct-ape-productions.LogModelTests")
+		.appendingPathComponent("com.duct-ape-productions.SwiftLogTests")
 		.appendingPathComponent("MyFileDelegateTests")
 	
 	let entries: [Entry] = {
@@ -68,7 +68,7 @@ class MyFileDelegateTests: XCTestCase {
 				  severity: .info,
 				  message: "a fance entry with lots of meaningful data, this should be very helpful",
 				  category: "MyFileDelegateTests",
-				  directory: "LogModelTests",
+				  directory: "SwiftLogTests",
 				  file: "MyFileDelegateTests",
 				  function: #function,
 				  line: #line,

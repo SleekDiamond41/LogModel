@@ -20,7 +20,7 @@ public class Console: Backer {
 		formatter = DateFormatter()
 		formatter.dateFormat = "MM-dd-yyyy hh:mm:ss.SSS"
 		
-		self.queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.Backers.Console.\(id)", qos: .userInitiated, target: .global(qos: .userInitiated))
+		self.queue = DispatchQueue(label: "com.duct-ape-productions.SwiftLog.Backers.Console.\(id)", qos: .userInitiated, target: .global(qos: .userInitiated))
 	}
 	
 	func formattedString(for entry: Entry) -> String {

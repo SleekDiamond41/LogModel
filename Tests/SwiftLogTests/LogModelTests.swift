@@ -2,26 +2,26 @@ import XCTest
 import Backers
 import Sockets
 import Models
-@testable import LogModel
+@testable import SwiftLog
 
 
 @available(iOS 10.0, *)
 extension Log.Category {
-	static let logModelTests = Log.Category("logModelTests")
+	static let SwiftLogTests = Log.Category("SwiftLogTests")
 }
 
 @available(OSX 10.12, iOS 10.0, *)
-final class LogModelTests: XCTestCase {
+final class SwiftLogTests: XCTestCase {
 	
 	var log: Log!
 	
-	let bundle = "com.duct-ape-productions.LogModel"
+	let bundle = "com.duct-ape-productions.SwiftLog"
 	lazy var dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
 		.first!
 		.appendingPathComponent("Testing")
 		.appendingPathComponent("Logs")
 		.appendingPathComponent(bundle)
-		.appendingPathComponent("LogModelTests")
+		.appendingPathComponent("SwiftLogTests")
 	
 	override func setUp() {
 		
@@ -31,7 +31,7 @@ final class LogModelTests: XCTestCase {
 
 		log = Log(
 			bundleID: bundle,
-			category: .logModelTests,
+			category: .SwiftLogTests,
 			backer: Console())
 	}
 	

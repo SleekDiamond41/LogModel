@@ -30,7 +30,7 @@ public final class StandardLocalStorage: Backer {
 		// Background queue because logging isn't an immediate concern, so long as it gets done.
 		// Target global(.background) to take advantage of existing threads
 		// instead of creating a new one for this queue.
-		self.queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.StandardLocalStorage.BackgroundUpdateQueue", qos: .background, target: .global(qos: .background))
+		self.queue = DispatchQueue(label: "com.duct-ape-productions.SwiftLog.StandardLocalStorage.BackgroundUpdateQueue", qos: .background, target: .global(qos: .background))
 		
 		// make sure buffer is initialized with the property capacity
 		clearBuffer()
@@ -41,7 +41,7 @@ public final class StandardLocalStorage: Backer {
 			.urls(for: .applicationSupportDirectory, in: .userDomainMask)
 			.first!
 			.appendingPathComponent(StandardLocalStorage.getUniqueDirectoryName())
-//			.appendingPathComponent("com.duct-ape-productions.LogModel")
+//			.appendingPathComponent("com.duct-ape-productions.SwiftLog")
 			.appendingPathComponent("Logs")
 		
 		self.init(server: server, directory: directory, maxBufferSize: maxBufferSize)

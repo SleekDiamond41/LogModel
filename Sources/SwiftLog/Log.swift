@@ -61,7 +61,7 @@ public struct Log {
 extension URL {
 	static let metaData = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
 		.first!
-		.appendingPathComponent("LogModel", isDirectory: true)
+		.appendingPathComponent("SwiftLog", isDirectory: true)
 		.appendingPathComponent("MetaData", isDirectory: true)
 }
 
