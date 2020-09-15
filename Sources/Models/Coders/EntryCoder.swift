@@ -45,8 +45,11 @@ public class EntryCoder {
 		guard !entries.isEmpty else {
 			return Data()
 		}
+		
+		let indicatorData = "e:".data(using: .utf8)!
+		
 		guard entries.count > 1 else {
-			return backer.encode(entries[0])
+			return backer.rowDelimiter + indicatorData + backer.encode(entries[0])
 		}
 		
 		let group = DispatchGroup()
@@ -61,10 +64,10 @@ public class EntryCoder {
 			
 			workQueue.async {
 				entries[i].id = UInt64(i)
-				let d = self.backer.encode(entries[i])
+				let d = self.backer.rowDelimiter + indicatorData + self.backer.encode(entries[i])
 				
 				updateQueue.async {
-					data += self.backer.rowDelimiter + "e:".data(using: .utf8)! + d
+					data += d
 					group.leave()
 				}
 			}
