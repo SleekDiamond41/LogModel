@@ -45,24 +45,26 @@ public class Socket {
 	private var pendingEntries = [EntryData]()
 	
 	deinit {
-		print("deninit")
+		print("deinit")
 	}
 	
 	public init(url: URL) {
 		var request = URLRequest(url: url)
+		request.timeoutInterval = 15
 		request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
 		self.connection = WebSocket(request: request)
+		self.connection.connect()
 		
 		queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.SocketBacker.workerQueue", qos: .userInitiated, target: .global(qos: .background))
 		
 		connection.onEvent = { event in
-			print("Received event:", event)
 			switch event {
 			case .connected(_):
 				self.state = .connected
 			case .disconnected(_, _):
 				self.state = .notConnected
 			default:
+				print(event)
 				return
 			}
 		}
@@ -103,5 +105,9 @@ public class Socket {
 			// stack up entries until we're connected
 			pendingEntries.append(data)
 		}
+	}
+	
+	func sendSimple(_ s: String) {
+		connection.write(string: s)
 	}
 }

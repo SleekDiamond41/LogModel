@@ -41,7 +41,7 @@ class PublicBacker: Backer {
 	
 	func log(_ data: EntryData) {
 		// send to the common thing
-		Log.shared?[Log.Category(data.category)].backer.log(data)
+//		Log.shared?[Log.Category(data.category)].backer.log(data)
 		
 		// send to the private thing
 		privateBacker.log(data)
@@ -64,14 +64,13 @@ extension InternalLogger {
 	
 	/// Extra information that might be useful to have, such as entering or exiting low-level functions.
 	public func verbose(_ message: Message, customData: String? = nil, file: String = #file, function: String = #function, line: UInt32 = #line) {
-		let bundleID = Log.shared?.bundleID
+		
 		let threadID = Thread.current.hashValue
 		
 		backer.log(EntryData(date: Date(),
 							 severity: .verbose,
 							 message: message,
 							 category: category,
-							 appID: bundleID ?? "",
 							 threadID: threadID,
 							 filepath: file,
 							 function: function,

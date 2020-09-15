@@ -1,4 +1,5 @@
 import XCTest
+import Backers
 import Sockets
 import Models
 @testable import LogModel
@@ -27,18 +28,11 @@ final class LogModelTests: XCTestCase {
 		print()
 		print(dir)
 		print()
-		
-//		let backer = LogBacker(
-//			bundleID: bundle,
-//			userID: nil,
-//			deviceID: nil,
-//			serverURL: nil,
-//			dir: self.dir)
-//
-//		log = Log(
-//			bundleID: bundle,
-//			category: .logModelTests,
-//			backer: backer)
+
+		log = Log(
+			bundleID: bundle,
+			category: .logModelTests,
+			backer: Console())
 	}
 	
 	override func tearDownWithError() throws {

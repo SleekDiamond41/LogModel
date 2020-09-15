@@ -25,14 +25,16 @@ struct EntryCoder_0_0_0: EntryCoderBacker {
 			entry.function,
 			String(entry.line),
 			String(entry.threadID),
-			entry.appID,
 			entry.frameworkID ?? "",
 			entry.userID?.uuidString ?? "",
 			(entry.deviceID?.uuidString ?? ""),
 		]
 		let text = parts
-			.map { toCSV($0) }
-			.joined(separator: "\(columnDelimiter)")
+			// add the delimiter in front of every line
+			// so we have separators between multiple batches, as we as between
+			// MetaData and Entries
+			.map { String(columnDelimiter) + toCSV($0) }
+			.joined()
 		
 		guard let data = text.data(using: .utf8) else {
 			preconditionFailure("failed to encode text")
@@ -61,7 +63,7 @@ struct EntryCoder_0_0_0: EntryCoderBacker {
 			preconditionFailure()
 		}
 		
-		let frameworkID = splits[11]
+		let frameworkID = splits[10]
 		
 		return Entry(id: UInt64(splits[0]),
 					 date: Date(timeIntervalSinceReferenceDate: dateTime),
@@ -73,10 +75,9 @@ struct EntryCoder_0_0_0: EntryCoderBacker {
 					 function: splits[7],
 					 line: line,
 					 threadID: threadID,
-					 appID: splits[10],
 					 frameworkID: !frameworkID.isEmpty ? frameworkID : nil,
-					 userID: UUID(uuidString: String(splits[12])),
-					 deviceID: UUID(uuidString: String(splits[13])))
+					 userID: UUID(uuidString: String(splits[11])),
+					 deviceID: UUID(uuidString: String(splits[12])))
 	}
 	
 	

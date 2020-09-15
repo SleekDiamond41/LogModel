@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import Backers
 @testable import LogModel
 
 import os
@@ -27,13 +28,8 @@ class LogTests: XCTestCase {
 	override func setUp() {
 		print(dir.path)
 		
-//		let backer = LogBacker(
-//			bundleID: bundleID,
-//			userID: nil,
-//			deviceID: nil,
-//			serverURL: nil,
-//			dir: dir)
-//
+		log = Log(bundleID: "testing", category: "LogTests", backer: Console())
+
 //		log = Log(
 //			bundleID: bundleID,
 //			category: .logModelTests,

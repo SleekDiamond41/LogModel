@@ -12,13 +12,36 @@ import Protocols
 
 public class Console: Backer {
 	
-	public init() { }
+	let id = UUID()
+	let formatter: DateFormatter
+	let queue: DispatchQueue
+	
+	public init() {
+		formatter = DateFormatter()
+		formatter.dateFormat = "MM-dd-yyyy hh:mm:ss.SSS"
+		
+		self.queue = DispatchQueue(label: "com.duct-ape-productions.LogModel.Backers.Console.\(id)", qos: .userInitiated, target: .global(qos: .userInitiated))
+	}
+	
+	func formattedString(for entry: Entry) -> String {
+		let dateString = formatter.string(from: entry.date)
+		
+		return """
+		\(dateString)
+		\(entry.file)
+		\(entry.category)
+		\(entry.severity)
+		\(entry.message)
+		
+		"""
+	}
 	
 	public func log(_ data: EntryData) {
-		let formatter = DateFormatter()
-		formatter.dateFormat = "MM-dd-yyyy hh:mm:ss.SSS"
-		let dateString = formatter.string(from: data.date)
-		
-		print(dateString, data.appID, data.category, data.makeEntry().message)
+		queue.async {
+			let entry = data.makeEntry()
+			let message = self.formattedString(for: entry)
+			
+			print(message)
+		}
 	}
 }

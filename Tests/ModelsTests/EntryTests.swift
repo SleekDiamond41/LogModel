@@ -26,7 +26,6 @@ class EntryTests: XCTestCase {
 				  function: "myFunction()",
 				  line: #line,
 				  threadID: 23849,
-				  appID: "com.duct-ape-productions.app-name",
 				  frameworkID: nil,
 				  userID: UUID(),
 				  deviceID: nil)
@@ -49,7 +48,6 @@ class EntryTests: XCTestCase {
 		XCTAssertEqual(result.function, entry.function)
 		XCTAssertEqual(result.line, entry.line)
 		XCTAssertEqual(result.threadID, entry.threadID)
-		XCTAssertEqual(result.appID, entry.appID)
 		XCTAssertEqual(result.frameworkID, entry.frameworkID)
 		XCTAssertEqual(result.userID, entry.userID)
 		XCTAssertEqual(result.deviceID, entry.deviceID)

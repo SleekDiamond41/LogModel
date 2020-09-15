@@ -14,9 +14,9 @@ let package = Package(
         .library(
             name: "LogModel",
             targets: ["LogModel"]),
-//		.library(
-//			name: "Models",
-//			targets: ["Models"]),
+		.library(
+			name: "Models",
+			targets: ["Models"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.

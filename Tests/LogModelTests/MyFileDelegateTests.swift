@@ -31,7 +31,7 @@ class SwiftLogDecoder {
 		}
 		
 		let splits = dataString
-			.split(separator: "\n")
+			.split(separator: "🚷")
 		
 		assert(splits.count >= 2, "we should only encode things if we have one MetaData object and at least one Entry")
 		
@@ -43,7 +43,9 @@ class SwiftLogDecoder {
 			let meta = try decoder.decode(MetaData.self, from: data)
 			
 			let coder = EntryCoder(version: (0, 0, 0))
-			let entries = coder.decode(from: splits.map { String($0) })
+			let entries = coder.decode(from: Array(splits.map { String($0) }.dropFirst()))
+			// drop first because the first one is metadata
+			// FIXME: get rid of this weird assumption
 			
 			return (meta, entries)
 		} catch {
@@ -71,7 +73,6 @@ class MyFileDelegateTests: XCTestCase {
 				  function: #function,
 				  line: #line,
 				  threadID: 290840,
-				  appID: "com.duct-ape-productions.LogModelTests",
 				  frameworkID: nil,
 				  userID: nil,
 				  deviceID: nil)
